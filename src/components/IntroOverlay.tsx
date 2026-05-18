@@ -78,7 +78,7 @@ export default function IntroOverlay({ onDismiss }: IntroOverlayProps) {
             Regulation becomes enforceable. Vietnam's{' '}
             <span className="text-accent font-semibold">600,000 smallholder coffee farms</span> must
             prove their land was not deforested after 2020. There is no open national baseline.{' '}
-            <span className="text-white font-semibold">ViMap is that baseline.</span>
+            <span className="text-white font-semibold">VinMap is that baseline.</span>
           </p>
         </div>
 

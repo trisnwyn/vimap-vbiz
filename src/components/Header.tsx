@@ -45,7 +45,7 @@ export default function Header({
         </div>
         <div>
           <h1 className="text-base font-bold tracking-tight text-white leading-none">
-            ViMap
+            VinMap
             <span className="text-accent ml-1 text-xs font-medium align-top">BETA</span>
           </h1>
           <p className="text-[10px] text-gray-500 leading-none mt-0.5">

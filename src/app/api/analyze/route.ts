@@ -49,7 +49,7 @@ Cover in 2000: ${p.forestCover[2000]} ha, Cover now: ${Math.round(interpolateYea
       })()
     : '';
 
-  const prompt = `You are an expert environmental analyst for ViMap, a Vietnam forest monitoring platform. Analyze the following data for year ${year} and provide actionable intelligence.
+  const prompt = `You are an expert environmental analyst for VinMap, a Vietnam forest monitoring platform. Analyze the following data for year ${year} and provide actionable intelligence.
 
 DATA SUMMARY:
 - Total forest cover: ${(totalForest / 1e6).toFixed(2)}M hectares

@@ -13,21 +13,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ViMap — Vietnam Land Use & Cover Intelligence",
+  title: "VinMap — Vietnam Land Use & Cover Intelligence",
   description:
     "Interactive geospatial dashboard tracking Vietnam's forest cover, deforestation, and EUDR compliance across 63 provinces from 2001 to 2024.",
   icons: { icon: "/favicon.svg" },
   openGraph: {
-    title: "ViMap — Vietnam Land Use & Cover Intelligence",
+    title: "VinMap — Vietnam Land Use & Cover Intelligence",
     description:
       "Track deforestation, assess EUDR compliance, and explore AI-powered risk analysis across Vietnam's 63 provinces.",
     type: "website",
     locale: "en_US",
-    siteName: "ViMap",
+    siteName: "VinMap",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ViMap — Vietnam Land Use & Cover Intelligence",
+    title: "VinMap — Vietnam Land Use & Cover Intelligence",
     description:
       "Interactive geospatial dashboard for Vietnam's forest cover and EUDR compliance.",
   },
