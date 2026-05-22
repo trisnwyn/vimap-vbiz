@@ -3,17 +3,11 @@
 import { useCallback } from 'react';
 import { FileDown } from 'lucide-react';
 import { provinces } from '@/data/provinces';
-import { interpolateYear } from '@/data/utils';
+import { interpolateYear, formatNum } from '@/data/utils';
 
 interface ExportReportProps {
   year: number;
   selectedProvince: string | null;
-}
-
-function formatNum(n: number): string {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(2) + 'M';
-  if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
-  return n.toLocaleString();
 }
 
 export default function ExportReport({ year, selectedProvince }: ExportReportProps) {
@@ -172,7 +166,7 @@ export default function ExportReport({ year, selectedProvince }: ExportReportPro
   return (
     <button
       onClick={handleExport}
-      className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] transition-all"
+      className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] transition-all"
       title="Export PDF Report"
     >
       <FileDown className="w-3 h-3" />

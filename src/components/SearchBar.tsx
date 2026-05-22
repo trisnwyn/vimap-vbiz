@@ -67,6 +67,10 @@ export default function SearchBar({ onSelect }: SearchBarProps) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Province, crop, region..."
+            aria-label="Search provinces"
+            role="combobox"
+            aria-expanded={results.length > 0}
+            aria-autocomplete="list"
             className="flex-1 bg-transparent text-[11px] text-white outline-none placeholder:text-gray-500"
           />
           <button
@@ -82,11 +86,12 @@ export default function SearchBar({ onSelect }: SearchBarProps) {
       )}
 
       {open && results.length > 0 && (
-        <div className="absolute top-full mt-1 left-0 right-0 glass-panel rounded-lg border border-white/[0.08] py-1 z-50 min-w-[260px] animate-fade-in max-h-[300px] overflow-y-auto">
+        <div role="listbox" className="absolute top-full mt-1 left-0 right-0 glass-panel rounded-lg border border-white/[0.08] py-1 z-50 min-w-[260px] animate-fade-in max-h-[300px] overflow-y-auto">
           {results.map((p) => (
             <button
               key={p.id}
               onClick={() => handleSelect(p.id)}
+              role="option"
               className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/[0.06] transition-colors text-left"
             >
               <MapPin className="w-3 h-3 text-accent shrink-0" />
@@ -95,7 +100,7 @@ export default function SearchBar({ onSelect }: SearchBarProps) {
                   {p.name}
                   <span className="text-gray-500 ml-1">({p.nameVi})</span>
                 </div>
-                <div className="text-[9px] text-gray-500 flex gap-2">
+                <div className="text-[11px] text-gray-500 flex gap-2">
                   <span>{p.region}</span>
                   <span>·</span>
                   <span>{p.primaryCrop}</span>
@@ -108,7 +113,7 @@ export default function SearchBar({ onSelect }: SearchBarProps) {
 
       {open && query.length > 0 && results.length === 0 && (
         <div className="absolute top-full mt-1 left-0 right-0 glass-panel rounded-lg border border-white/[0.08] p-3 z-50 min-w-[220px] animate-fade-in">
-          <p className="text-[10px] text-gray-500 text-center">No provinces found</p>
+          <p className="text-xs text-gray-500 text-center">No provinces found</p>
         </div>
       )}
     </div>

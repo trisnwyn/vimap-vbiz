@@ -3,6 +3,12 @@
 import { useMemo, useState } from 'react';
 import { ExternalLink, MapPin, Calendar } from 'lucide-react';
 import { newsArticles } from '@/data/news-articles';
+import { categoryColors } from '@/constants/colors';
+
+function getSearchUrl(title: string, source: string): string {
+  const q = encodeURIComponent(`${title} ${source}`);
+  return `https://www.google.com/search?q=${q}`;
+}
 
 interface NewsPanelProps {
   year: number;
@@ -38,7 +44,7 @@ export default function NewsPanel({ year, selectedNewsId, onNewsSelect }: NewsPa
             <button
               key={cat.id}
               onClick={() => setFilter(cat.id)}
-              className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-all ${
+              className={`px-2 py-0.5 rounded-full text-xs font-medium transition-all ${
                 filter === cat.id
                   ? 'bg-accent/15 text-accent'
                   : 'text-gray-500 hover:text-gray-300 bg-white/[0.03]'
@@ -50,7 +56,7 @@ export default function NewsPanel({ year, selectedNewsId, onNewsSelect }: NewsPa
         </div>
       </div>
 
-      <div className="text-[10px] text-gray-500">
+      <div className="text-xs text-gray-500">
         {filtered.length} article{filtered.length !== 1 ? 's' : ''} through {year}
       </div>
 
@@ -67,16 +73,7 @@ export default function NewsPanel({ year, selectedNewsId, onNewsSelect }: NewsPa
               <span
                 className={`w-2 h-2 rounded-full mt-1 shrink-0 category-${article.category}`}
                 style={{
-                  backgroundColor:
-                    article.category === 'eudr'
-                      ? '#ff6b6b'
-                      : article.category === 'deforestation'
-                        ? '#ffa726'
-                        : article.category === 'policy'
-                          ? '#42a5f5'
-                          : article.category === 'climate'
-                            ? '#66bb6a'
-                            : '#e8d44d',
+                  backgroundColor: categoryColors[article.category] ?? '#e8d44d',
                 }}
               />
               <h4 className="text-xs text-white font-medium leading-snug line-clamp-2">
@@ -84,7 +81,7 @@ export default function NewsPanel({ year, selectedNewsId, onNewsSelect }: NewsPa
               </h4>
             </div>
 
-            <div className="flex items-center gap-2 text-[10px] text-gray-500 mb-1.5">
+            <div className="flex items-center gap-2 text-xs text-gray-500 mb-1.5">
               <span className="font-medium text-gray-400">{article.source}</span>
               <span className="flex items-center gap-0.5">
                 <Calendar className="w-2.5 h-2.5" />
@@ -102,18 +99,18 @@ export default function NewsPanel({ year, selectedNewsId, onNewsSelect }: NewsPa
                   {article.summary}
                 </p>
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1 text-[9px] text-gray-500">
+                  <span className="flex items-center gap-1 text-[11px] text-gray-500">
                     <MapPin className="w-2.5 h-2.5" />
                     {article.lat.toFixed(2)}°N, {article.lng.toFixed(2)}°E
                   </span>
                   <a
-                    href={article.url}
+                    href={article.url || getSearchUrl(article.title, article.source)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-[10px] text-accent hover:underline"
+                    className="flex items-center gap-1 text-xs text-accent hover:underline"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    Read full <ExternalLink className="w-2.5 h-2.5" />
+                    Search source <ExternalLink className="w-2.5 h-2.5" />
                   </a>
                 </div>
               </div>

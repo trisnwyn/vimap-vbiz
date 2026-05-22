@@ -60,6 +60,7 @@ export default function TimeSlider({ value, onChange, min = 2001, max = 2024 }: 
             onClick={() => { stop(); onChange(min); }}
             className="p-1.5 rounded-md text-gray-400 hover:text-white hover:bg-white/10 transition-all"
             title="Reset to start"
+            tabIndex={0}
           >
             <SkipBack className="w-3.5 h-3.5" />
           </button>
@@ -67,6 +68,8 @@ export default function TimeSlider({ value, onChange, min = 2001, max = 2024 }: 
             onClick={togglePlay}
             className="p-2 rounded-lg bg-accent/15 text-accent hover:bg-accent/25 transition-all"
             title={playing ? 'Pause' : 'Play timeline'}
+            tabIndex={0}
+            aria-label={playing ? 'Pause timeline' : 'Play timeline'}
           >
             {playing ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
           </button>
@@ -74,6 +77,7 @@ export default function TimeSlider({ value, onChange, min = 2001, max = 2024 }: 
             onClick={() => { stop(); onChange(max); }}
             className="p-1.5 rounded-md text-gray-400 hover:text-white hover:bg-white/10 transition-all"
             title="Skip to end"
+            tabIndex={0}
           >
             <SkipForward className="w-3.5 h-3.5" />
           </button>
@@ -93,7 +97,7 @@ export default function TimeSlider({ value, onChange, min = 2001, max = 2024 }: 
               <button
                 key={y}
                 onClick={() => { stop(); onChange(y); }}
-                className={`text-[9px] font-mono transition-colors ${
+                className={`text-[11px] font-mono transition-colors ${
                   y === value ? 'text-accent font-bold' : 'text-gray-600 hover:text-gray-400'
                 }`}
               >
@@ -105,7 +109,7 @@ export default function TimeSlider({ value, onChange, min = 2001, max = 2024 }: 
 
         <div className="text-right min-w-[80px]">
           <div className="text-2xl font-mono font-bold text-white leading-none">{value}</div>
-          <div className="text-[9px] text-gray-500 mt-0.5">
+          <div className="text-[11px] text-gray-500 mt-0.5">
             {value <= 2020 ? 'Pre-EUDR cutoff' : 'Post-EUDR cutoff'}
           </div>
         </div>

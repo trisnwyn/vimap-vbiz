@@ -1,20 +1,23 @@
-/**
- * Interpolate a value from a year-keyed record.
- * If the exact year exists, return it.
- * Otherwise, linearly interpolate between the two nearest bracket years.
- * Falls back to the nearest available year if outside the data range.
- */
+const sortedYearsCache = new WeakMap<Record<number, number>, number[]>();
+
+function getSortedYears(data: Record<number, number>): number[] {
+  let cached = sortedYearsCache.get(data);
+  if (!cached) {
+    cached = Object.keys(data).map(Number).sort((a, b) => a - b);
+    sortedYearsCache.set(data, cached);
+  }
+  return cached;
+}
+
 export function interpolateYear(data: Record<number, number>, year: number): number {
   if (data[year] !== undefined) return data[year];
 
-  const years = Object.keys(data).map(Number).sort((a, b) => a - b);
+  const years = getSortedYears(data);
   if (years.length === 0) return 0;
 
-  // Clamp to range
   if (year <= years[0]) return data[years[0]];
   if (year >= years[years.length - 1]) return data[years[years.length - 1]];
 
-  // Find bracketing years
   let lo = years[0];
   let hi = years[years.length - 1];
   for (const y of years) {
@@ -24,7 +27,12 @@ export function interpolateYear(data: Record<number, number>, year: number): num
 
   if (lo === hi) return data[lo];
 
-  // Linear interpolation
   const t = (year - lo) / (hi - lo);
   return data[lo] + t * (data[hi] - data[lo]);
+}
+
+export function formatNum(n: number): string {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(2) + 'M';
+  if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
+  return n.toLocaleString();
 }

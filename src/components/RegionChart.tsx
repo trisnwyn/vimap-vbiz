@@ -40,7 +40,7 @@ export default function RegionChart({ year }: RegionChartProps) {
 
   return (
     <div className="mt-1">
-      <h4 className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">
+      <h4 className="text-xs text-gray-400 uppercase tracking-wider mb-1">
         Loss Rate by Region (‰/yr)
       </h4>
       <div style={{ height: 180 }}>
@@ -49,7 +49,7 @@ export default function RegionChart({ year }: RegionChartProps) {
             <PolarGrid stroke="rgba(255,255,255,0.08)" />
             <PolarAngleAxis
               dataKey="region"
-              tick={{ fill: '#777', fontSize: 9 }}
+              tick={{ fill: '#777', fontSize: 11 }}
             />
             <Radar
               name="Loss Rate"

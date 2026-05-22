@@ -36,6 +36,8 @@ export default function IntroOverlay({ onDismiss }: IntroOverlayProps) {
 
   return (
     <div
+      role="dialog"
+      aria-labelledby="intro-title"
       className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-300 ${
         visible ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
@@ -56,7 +58,7 @@ export default function IntroOverlay({ onDismiss }: IntroOverlayProps) {
               <TreePine className="w-7 h-7 text-accent" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-1">
+          <h1 id="intro-title" className="text-3xl font-bold text-white mb-1">
             Vi<span className="text-accent">Map</span>
           </h1>
           <p className="text-gray-400 text-sm">Vietnam Land Use & Cover Intelligence Platform</p>
@@ -88,7 +90,7 @@ export default function IntroOverlay({ onDismiss }: IntroOverlayProps) {
             <div key={title} className="glass-panel rounded-xl p-3 text-center">
               <Icon className={`w-5 h-5 ${color} mx-auto mb-2`} />
               <div className="text-white text-xs font-semibold mb-1">{title}</div>
-              <div className="text-gray-500 text-[10px] leading-relaxed">{desc}</div>
+              <div className="text-gray-500 text-xs leading-relaxed">{desc}</div>
             </div>
           ))}
         </div>
@@ -102,7 +104,7 @@ export default function IntroOverlay({ onDismiss }: IntroOverlayProps) {
           <ChevronRight className="w-4 h-4" />
         </button>
 
-        <p className="text-center text-[10px] text-gray-600 mt-3">
+        <p className="text-center text-xs text-gray-600 mt-3">
           Data covers 2001–2024 · 63 provinces · Methodology: Hansen GFC + MARD forestry reports
         </p>
       </div>

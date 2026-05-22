@@ -39,19 +39,20 @@ export default function ForestLossChart({ selectedProvince }: ForestLossChartPro
   return (
     <div className="w-full" style={{ minHeight: 180 }}>
       <ResponsiveContainer width="100%" height={180}>
-        <BarChart data={data} margin={{ top: 5, right: 5, left: -15, bottom: 0 }}>
+        <BarChart data={data} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
           <XAxis
             dataKey="year"
-            tick={{ fill: '#888', fontSize: 10 }}
+            tick={{ fill: '#888', fontSize: 11 }}
             axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
             tickLine={false}
           />
           <YAxis
-            tick={{ fill: '#888', fontSize: 9 }}
+            tick={{ fill: '#888', fontSize: 11 }}
             axisLine={false}
             tickLine={false}
-            tickFormatter={(v) => `${v}K`}
+            tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}M` : `${v}K`}
+            width={46}
           />
           <Tooltip
             contentStyle={{
@@ -74,7 +75,7 @@ export default function ForestLossChart({ selectedProvince }: ForestLossChartPro
               value: 'EUDR',
               position: 'top',
               fill: '#ff6b6b',
-              fontSize: 9,
+              fontSize: 11,
             }}
           />
           <Bar

@@ -16,7 +16,13 @@ export async function GET() {
 
   for (const url of GEOJSON_SOURCES) {
     try {
-      const response = await fetch(url, { next: { revalidate: 86400 * 7 } });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+      const response = await fetch(url, {
+        next: { revalidate: 86400 * 7 },
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
       if (!response.ok) continue;
 
       const geojson = await response.json();

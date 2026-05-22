@@ -10,6 +10,7 @@ export interface Province {
   lossRate: Record<number, number>;
   primaryCrop: string;
   area: number;
+  dataSource?: 'gfw_hansen' | 'modeled' | 'mard';
 }
 
 export interface ForestLossPoint {
@@ -31,6 +32,7 @@ export interface NewsArticle {
   lng: number;
   category: 'eudr' | 'deforestation' | 'policy' | 'climate' | 'agriculture';
   url: string;
+  isVerified?: boolean;
 }
 
 export interface LULCClass {

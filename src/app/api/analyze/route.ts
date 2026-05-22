@@ -3,7 +3,28 @@ import { provinces } from '@/data/provinces';
 import { interpolateYear } from '@/data/utils';
 
 export async function POST(req: NextRequest) {
-  const { year, provinceId } = await req.json();
+  let body: { year?: unknown; provinceId?: unknown };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
+  const year = typeof body.year === 'number' && body.year >= 2000 && body.year <= 2030
+    ? body.year
+    : null;
+  if (year === null) {
+    return NextResponse.json({ error: 'Invalid year (must be 2000-2030)' }, { status: 400 });
+  }
+
+  const provinceId = typeof body.provinceId === 'string' && provinces.some(p => p.id === body.provinceId)
+    ? body.provinceId
+    : body.provinceId === null || body.provinceId === undefined
+      ? null
+      : undefined;
+  if (provinceId === undefined) {
+    return NextResponse.json({ error: 'Invalid provinceId' }, { status: 400 });
+  }
 
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {

@@ -2,7 +2,7 @@
 
 export function StatSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-2 animate-pulse">
+    <div className="grid grid-cols-2 gap-2 animate-pulse" role="status" aria-busy="true" aria-label="Loading statistics">
       {[...Array(4)].map((_, i) => (
         <div key={i} className="stat-card">
           <div className="flex items-center gap-1.5 mb-2">
@@ -19,7 +19,7 @@ export function StatSkeleton() {
 
 export function ChartSkeleton() {
   return (
-    <div className="animate-pulse">
+    <div className="animate-pulse" role="status" aria-busy="true" aria-label="Loading chart">
       <div className="h-2 w-24 rounded bg-white/[0.06] mb-3" />
       <div className="h-[160px] rounded-lg bg-white/[0.03] flex items-end gap-1 p-4">
         {[40, 65, 80, 55, 70, 45].map((h, i) => (
@@ -41,7 +41,7 @@ export function ChartSkeleton() {
 
 export function ListSkeleton({ rows = 5 }: { rows?: number }) {
   return (
-    <div className="space-y-1.5 animate-pulse">
+    <div className="space-y-1.5 animate-pulse" role="status" aria-busy="true" aria-label="Loading list">
       {[...Array(rows)].map((_, i) => (
         <div
           key={i}

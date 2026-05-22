@@ -63,7 +63,7 @@ export default function BasemapSwitcher({ value, onChange }: BasemapSwitcherProp
       </button>
 
       {open && (
-        <div className="absolute top-10 right-0 glass-panel rounded-lg border border-white/[0.08] p-1.5 animate-fade-in min-w-[120px]">
+        <div role="menu" className="absolute top-10 right-0 glass-panel rounded-lg border border-white/[0.08] p-1.5 animate-fade-in min-w-[120px]">
           {STYLES.map(({ id, label, icon: Icon }) => (
             <button
               key={id}

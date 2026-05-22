@@ -14,8 +14,10 @@ export async function GET() {
     }
 
     const raw = await response.json();
-    // World Bank returns [metadata, data_array]
-    const entries = raw[1] ?? [];
+    if (!Array.isArray(raw) || raw.length < 2 || !Array.isArray(raw[1])) {
+      return NextResponse.json({ error: 'Unexpected World Bank response format' }, { status: 502 });
+    }
+    const entries = raw[1];
 
     const data = entries
       .filter((e: { value: number | null }) => e.value !== null)

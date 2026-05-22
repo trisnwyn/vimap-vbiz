@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { X, MapPin, TreePine, TrendingDown, TrendingUp, Package, AlertTriangle } from 'lucide-react';
 import { provinces } from '@/data/provinces';
-import { interpolateYear } from '@/data/utils';
+import { interpolateYear, formatNum } from '@/data/utils';
 
 interface ProvinceDetailProps {
   provinceId: string;
@@ -28,7 +28,7 @@ function Sparkline({ data, color, height = 32 }: { data: number[]; color: string
     .join(' ');
 
   return (
-    <svg viewBox={`0 0 ${w} ${height}`} className="w-full" style={{ height }}>
+    <svg viewBox={`0 0 ${w} ${height}`} className="w-full" style={{ height }} aria-hidden="true">
       <polyline
         points={points}
         fill="none"
@@ -46,12 +46,6 @@ function Sparkline({ data, color, height = 32 }: { data: number[]; color: string
       })}
     </svg>
   );
-}
-
-function formatNum(n: number): string {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(2) + 'M';
-  if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
-  return n.toLocaleString();
 }
 
 const EUDR_COMMODITIES = ['coffee', 'rubber', 'timber', 'shrimp'];
@@ -103,23 +97,24 @@ export default function ProvinceDetail({ provinceId, year, onClose }: ProvinceDe
   const rc = riskColors[stats.riskLevel];
 
   return (
-    <div className="absolute top-3 left-[292px] w-[300px] z-30 glass-panel rounded-xl border border-white/[0.08] shadow-2xl animate-fade-in overflow-hidden">
+    <div className="absolute top-3 left-3 lg:left-[292px] w-[calc(100%-24px)] sm:w-[300px] z-30 glass-panel rounded-xl border border-white/[0.08] shadow-2xl animate-fade-in overflow-hidden max-h-[calc(100vh-120px)] overflow-y-auto">
       {/* Header */}
       <div className="flex items-start justify-between p-3 pb-2 border-b border-white/[0.06]">
         <div>
           <h3 className="text-sm font-bold text-white">{province.name}</h3>
-          <p className="text-[10px] text-gray-500">{province.nameVi}</p>
+          <p className="text-xs text-gray-500">{province.nameVi}</p>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-white/10 text-gray-300">
+            <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-white/10 text-gray-300">
               {province.region}
             </span>
-            <span className={`text-[9px] px-1.5 py-0.5 rounded-full border font-bold uppercase ${rc.bg} ${rc.text} ${rc.border}`}>
+            <span className={`text-[11px] px-1.5 py-0.5 rounded-full border font-bold uppercase ${rc.bg} ${rc.text} ${rc.border}`}>
               {stats.riskLevel} risk
             </span>
           </div>
         </div>
         <button
           onClick={onClose}
+          aria-label="Close province detail"
           className="p-1 rounded-md text-gray-500 hover:text-white hover:bg-white/10 transition-colors"
         >
           <X className="w-3.5 h-3.5" />
@@ -128,7 +123,7 @@ export default function ProvinceDetail({ provinceId, year, onClose }: ProvinceDe
 
       {/* Quick stats */}
       <div className="p-3 space-y-3">
-        <div className="flex items-center gap-2 text-[10px] text-gray-400">
+        <div className="flex items-center gap-2 text-xs text-gray-400">
           <MapPin className="w-3 h-3" />
           {province.lat.toFixed(2)}°N, {province.lng.toFixed(2)}°E
           <span className="mx-0.5">·</span>
@@ -140,18 +135,18 @@ export default function ProvinceDetail({ provinceId, year, onClose }: ProvinceDe
           <div className="stat-card !p-2">
             <div className="flex items-center gap-1 mb-1">
               <TreePine className="w-3 h-3 text-green-400" />
-              <span className="text-[8px] text-gray-500 uppercase">Cover</span>
+              <span className="text-[11px] text-gray-500 uppercase">Cover</span>
             </div>
             <div className="text-xs font-bold text-white font-mono">{formatNum(stats.currentCover)}</div>
-            <div className="text-[8px] text-gray-500">{stats.coverPct}% of area</div>
+            <div className="text-[11px] text-gray-500">{stats.coverPct}% of area</div>
           </div>
           <div className="stat-card !p-2">
             <div className="flex items-center gap-1 mb-1">
               <TrendingDown className="w-3 h-3 text-orange-400" />
-              <span className="text-[8px] text-gray-500 uppercase">Loss/yr</span>
+              <span className="text-[11px] text-gray-500 uppercase">Loss/yr</span>
             </div>
             <div className="text-xs font-bold text-orange-400 font-mono">{formatNum(stats.currentLoss)}</div>
-            <div className="text-[8px] text-gray-500">{(stats.currentRate * 100).toFixed(2)}%</div>
+            <div className="text-[11px] text-gray-500">{(stats.currentRate * 100).toFixed(2)}%</div>
           </div>
           <div className="stat-card !p-2">
             <div className="flex items-center gap-1 mb-1">
@@ -160,7 +155,7 @@ export default function ProvinceDetail({ provinceId, year, onClose }: ProvinceDe
               ) : (
                 <TrendingDown className="w-3 h-3 text-red-400" />
               )}
-              <span className="text-[8px] text-gray-500 uppercase">Since 00</span>
+              <span className="text-[11px] text-gray-500 uppercase">Since 00</span>
             </div>
             <div
               className={`text-xs font-bold font-mono ${stats.coverChange >= 0 ? 'text-green-400' : 'text-red-400'}`}
@@ -168,7 +163,7 @@ export default function ProvinceDetail({ provinceId, year, onClose }: ProvinceDe
               {stats.coverChange >= 0 ? '+' : ''}
               {stats.coverChange.toFixed(1)}%
             </div>
-            <div className="text-[8px] text-gray-500">cover change</div>
+            <div className="text-[11px] text-gray-500">cover change</div>
           </div>
         </div>
 
@@ -176,8 +171,8 @@ export default function ProvinceDetail({ provinceId, year, onClose }: ProvinceDe
         <div className="space-y-2">
           <div>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[9px] text-gray-400">Forest Cover (ha)</span>
-              <span className="text-[9px] text-gray-600 font-mono">
+              <span className="text-[11px] text-gray-400">Forest Cover (ha)</span>
+              <span className="text-[11px] text-gray-600 font-mono">
                 {DATA_YEARS[0]}–{DATA_YEARS[DATA_YEARS.length - 1]}
               </span>
             </div>
@@ -187,8 +182,8 @@ export default function ProvinceDetail({ provinceId, year, onClose }: ProvinceDe
           </div>
           <div>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[9px] text-gray-400">Annual Loss (ha)</span>
-              <span className="text-[9px] text-gray-600 font-mono">
+              <span className="text-[11px] text-gray-400">Annual Loss (ha)</span>
+              <span className="text-[11px] text-gray-600 font-mono">
                 {DATA_YEARS[0]}–{DATA_YEARS[DATA_YEARS.length - 1]}
               </span>
             </div>
@@ -198,7 +193,7 @@ export default function ProvinceDetail({ provinceId, year, onClose }: ProvinceDe
           </div>
           <div>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[9px] text-gray-400">Loss Rate (%)</span>
+              <span className="text-[11px] text-gray-400">Loss Rate (%)</span>
             </div>
             <div className="p-2 rounded-md bg-white/[0.03]">
               <Sparkline data={stats.rateData.map((r) => r * 100)} color="#f87171" />
@@ -211,8 +206,8 @@ export default function ProvinceDetail({ provinceId, year, onClose }: ProvinceDe
           <div className="flex items-start gap-2 p-2 rounded-lg bg-amber-500/[0.06] border border-amber-500/15">
             <Package className="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0" />
             <div>
-              <div className="text-[10px] font-bold text-amber-400">EUDR-Regulated Commodity</div>
-              <p className="text-[9px] text-gray-400 mt-0.5">
+              <div className="text-xs font-bold text-amber-400">EUDR-Regulated Commodity</div>
+              <p className="text-[11px] text-gray-400 mt-0.5">
                 Primary crop: <span className="text-white capitalize">{province.primaryCrop}</span>.
                 Supply chains from this province may require enhanced due diligence under EU
                 Regulation 2023/1115.
@@ -225,7 +220,7 @@ export default function ProvinceDetail({ provinceId, year, onClose }: ProvinceDe
         {stats.riskLevel === 'critical' && (
           <div className="flex items-start gap-2 p-2 rounded-lg bg-red-500/[0.06] border border-red-500/15">
             <AlertTriangle className="w-3.5 h-3.5 text-red-400 mt-0.5 shrink-0" />
-            <p className="text-[9px] text-gray-400">
+            <p className="text-[11px] text-gray-400">
               This province exceeds the 2% annual loss threshold. Satellite monitoring and
               ground-truth surveys are strongly recommended before sourcing commodities.
             </p>
@@ -234,9 +229,9 @@ export default function ProvinceDetail({ provinceId, year, onClose }: ProvinceDe
 
         {/* Year-over-year table */}
         <div>
-          <h4 className="text-[9px] text-gray-400 uppercase tracking-wider mb-1">Year-by-Year Data</h4>
+          <h4 className="text-[11px] text-gray-400 uppercase tracking-wider mb-1">Year-by-Year Data</h4>
           <div className="rounded-md border border-white/[0.06] overflow-hidden">
-            <table className="w-full text-[9px]">
+            <table className="w-full text-[11px]">
               <thead>
                 <tr className="bg-white/[0.03]">
                   <th className="text-left text-gray-500 font-medium px-2 py-1">Year</th>

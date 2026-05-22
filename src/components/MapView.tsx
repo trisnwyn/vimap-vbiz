@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import Map, { Source, Layer, Popup, NavigationControl } from 'react-map-gl/maplibre';
 import type { MapRef, MapLayerMouseEvent } from 'react-map-gl/maplibre';
+import type maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { provinces } from '@/data/provinces';
 import { interpolateYear } from '@/data/utils';
@@ -46,6 +47,9 @@ export default function MapView({
     name?: string;
     detail?: string;
   } | null>(null);
+  const [viewBounds, setViewBounds] = useState<{
+    west: number; south: number; east: number; north: number;
+  } | null>(null);
 
   // Province boundary GeoJSON from API
   const [boundaryGeoJSON, setBoundaryGeoJSON] = useState<object | null>(null);
@@ -60,7 +64,7 @@ export default function MapView({
   }, []);
 
   const mapStyle = useMemo(() => {
-    if (basemap === 'satellite') return getSatelliteStyle() as unknown as string;
+    if (basemap === 'satellite') return getSatelliteStyle() as maplibregl.StyleSpecification;
     return BASEMAP_URLS[basemap];
   }, [basemap]);
 
@@ -82,16 +86,27 @@ export default function MapView({
     })),
   }), [year]);
 
-  const heatmapGeoJSON = useMemo(() => ({
-    type: 'FeatureCollection' as const,
-    features: forestLossPoints
-      .filter((p) => p.year <= year)
-      .map((p) => ({
+  const heatmapGeoJSON = useMemo(() => {
+    const BUFFER = 1.5; // degrees buffer around viewport
+    const filtered = forestLossPoints.filter((p) => {
+      if (p.year > year) return false;
+      if (!viewBounds) return true; // show all before first move
+      return (
+        p.lng >= viewBounds.west - BUFFER &&
+        p.lng <= viewBounds.east + BUFFER &&
+        p.lat >= viewBounds.south - BUFFER &&
+        p.lat <= viewBounds.north + BUFFER
+      );
+    });
+    return {
+      type: 'FeatureCollection' as const,
+      features: filtered.map((p) => ({
         type: 'Feature' as const,
         geometry: { type: 'Point' as const, coordinates: [p.lng, p.lat] },
         properties: { intensity: p.intensity, year: p.year },
       })),
-  }), [year]);
+    };
+  }, [year, viewBounds]);
 
   const newsGeoJSON = useMemo(() => ({
     type: 'FeatureCollection' as const,
@@ -233,6 +248,18 @@ export default function MapView({
     [drawingMode],
   );
 
+  const handleMoveEnd = useCallback(() => {
+    const map = mapRef.current?.getMap();
+    if (!map) return;
+    const b = map.getBounds();
+    setViewBounds({
+      west: b.getWest(),
+      south: b.getSouth(),
+      east: b.getEast(),
+      north: b.getNorth(),
+    });
+  }, []);
+
   return (
     <Map
       ref={mapRef}
@@ -241,6 +268,8 @@ export default function MapView({
       mapStyle={mapStyle}
       onClick={handleClick}
       onMouseMove={handleMouseMove}
+      onMoveEnd={handleMoveEnd}
+      onLoad={handleMoveEnd}
       maxBounds={[
         [98, 5],
         [115, 26],

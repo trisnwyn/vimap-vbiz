@@ -67,8 +67,8 @@ export default function HeadlineStrip({ year }: HeadlineStripProps) {
           </div>
           <div>
             <div className="text-base font-bold font-mono text-white leading-none">{value}</div>
-            <div className="text-[10px] text-gray-400 mt-0.5 leading-none">{label}</div>
-            <div className="text-[9px] text-gray-600 leading-none mt-0.5">{sub}</div>
+            <div className="text-xs text-gray-400 mt-0.5 leading-none">{label}</div>
+            <div className="text-[11px] text-gray-600 leading-none mt-0.5">{sub}</div>
           </div>
         </div>
       ))}
