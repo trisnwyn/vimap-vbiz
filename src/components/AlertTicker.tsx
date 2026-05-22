@@ -150,11 +150,11 @@ export default function AlertTicker({ year }: AlertTickerProps) {
 
   return (
     <div
-      className={`flex items-center gap-2 px-4 py-1.5 bg-white/[0.02] border-b ${borderColor} transition-all duration-300`}
+      className={`flex items-center gap-2 px-4 py-1.5 bg-[#35b779]/[0.04] border-b ${borderColor} transition-all duration-300`}
     >
       <div className="flex items-center gap-1.5 shrink-0">
         <div className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" aria-hidden="true" />
-        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Live</span>
+        <span className="text-[11px] font-bold text-[#374151] uppercase tracking-wider">Live</span>
       </div>
 
       <div
@@ -164,7 +164,7 @@ export default function AlertTicker({ year }: AlertTickerProps) {
         }`}
       >
         <Icon className={`w-3 h-3 ${alert.iconColor} shrink-0`} />
-        <p className="text-xs text-gray-300 truncate">{alert.message}</p>
+        <p className="text-xs text-[#1f2937] truncate">{alert.message}</p>
       </div>
 
       <div className="flex items-center gap-1 shrink-0">
@@ -179,7 +179,7 @@ export default function AlertTicker({ year }: AlertTickerProps) {
               }, 150);
             }}
             className={`w-1 h-1 rounded-full transition-all ${
-              i === currentIndex ? 'bg-accent w-2.5' : 'bg-gray-600'
+              i === currentIndex ? 'bg-accent w-2.5' : 'bg-[#9ca3af]'
             }`}
           />
         ))}

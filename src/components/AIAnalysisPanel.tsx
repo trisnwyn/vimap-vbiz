@@ -322,9 +322,9 @@ export default function AIAnalysisPanel({ year, selectedProvince, density = 'com
     <div>
       <div className="flex items-center gap-2 mb-1">
         <Sparkles className="w-4 h-4 text-accent" />
-        <h3 className="text-xs font-bold text-white">AI Risk Analysis</h3>
+        <h3 className="text-xs font-bold text-[#111827]">AI Risk Analysis</h3>
       </div>
-      <p className="text-xs text-gray-500 leading-relaxed">
+      <p className="text-xs text-[#6b7280] leading-relaxed">
         Analyze deforestation trends, forecast disaster risks, and assess EUDR compliance
         using statistical modeling on province-level data.
       </p>
@@ -334,7 +334,7 @@ export default function AIAnalysisPanel({ year, selectedProvince, density = 'com
   const selectedBlock = selected && (
     <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-accent/[0.06] border border-accent/10">
       <ChevronRight className="w-3 h-3 text-accent" />
-      <span className="text-xs text-gray-300">
+      <span className="text-xs text-[#1f2937]">
         Analyzing: <span className="text-accent font-medium">{selected.name}</span>
       </span>
     </div>
@@ -344,10 +344,10 @@ export default function AIAnalysisPanel({ year, selectedProvince, density = 'com
     <button
       onClick={handleGenerate}
       disabled={analyzing}
-      className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium transition-all ${
+      className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium transition-all glass-btn ${
         analyzing
-          ? 'bg-accent/10 text-accent/60 cursor-wait'
-          : 'bg-accent/15 text-accent hover:bg-accent/25 border border-accent/20'
+          ? '!bg-accent/10 !border-accent/15 text-accent/60 cursor-wait'
+          : '!bg-accent/15 !border-accent/25 text-accent hover:!bg-accent/25'
       }`}
     >
       {analyzing ? (
@@ -366,21 +366,21 @@ export default function AIAnalysisPanel({ year, selectedProvince, density = 'com
 
   const scoreboardBlock = (
     <div>
-      <h4 className="text-xs text-gray-400 uppercase tracking-wider mb-2">
+      <h4 className="text-xs text-[#374151] uppercase tracking-wider mb-2">
         Risk Scoreboard — {year}
       </h4>
       <div className="space-y-1">
         {topRisks.map((p) => (
-          <div key={p.name} className="flex items-center justify-between px-2 py-1.5 rounded-md bg-white/[0.03]">
+          <div key={p.name} className="flex items-center justify-between px-2 py-1.5 rounded-md bg-[#35b779]/[0.05]">
             <div className="flex items-center gap-2 min-w-0">
               <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                 p.score >= 60 ? 'bg-red-400' : p.score >= 40 ? 'bg-amber-400' : 'bg-green-400'
               }`} />
-              <span className="text-[11px] text-white truncate">{p.name}</span>
-              <span className="text-[11px] text-gray-600 truncate">{p.region}</span>
+              <span className="text-[11px] text-[#111827] truncate">{p.name}</span>
+              <span className="text-[11px] text-[#9ca3af] truncate">{p.region}</span>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
-              <div className="w-16 h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+              <div className="w-16 h-1.5 rounded-full bg-[#35b779]/[0.08] overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-700 ${
                     p.score >= 60 ? 'bg-red-400' : p.score >= 40 ? 'bg-amber-400' : 'bg-green-400'
@@ -419,7 +419,7 @@ export default function AIAnalysisPanel({ year, selectedProvince, density = 'com
                     {insight.type}
                   </span>
                 </div>
-                <p className="text-xs text-gray-300 leading-relaxed">{insight.body}</p>
+                <p className="text-xs text-[#1f2937] leading-relaxed">{insight.body}</p>
               </div>
             </div>
           </div>
@@ -429,14 +429,14 @@ export default function AIAnalysisPanel({ year, selectedProvince, density = 'com
   );
 
   const sourceFooter = insights.length > 0 && visibleCount >= insights.length && (
-    <div className="p-2 rounded-md bg-white/[0.02] border border-white/[0.04] animate-fade-in">
+    <div className="p-2 rounded-md bg-[#35b779]/[0.04] border border-[#35b779]/[0.12] animate-fade-in">
       <div className="flex items-center gap-1.5 mb-1">
         <div className={`w-1.5 h-1.5 rounded-full ${aiSource === 'groq' ? 'bg-accent' : 'bg-amber-400'}`} />
-        <span className="text-[11px] font-bold text-gray-400">
+        <span className="text-[11px] font-bold text-[#374151]">
           {aiSource === 'groq' ? 'Powered by Groq (Llama 3.3 70B)' : 'Local statistical analysis'}
         </span>
       </div>
-      <p className="text-[11px] text-gray-500 leading-relaxed">
+      <p className="text-[11px] text-[#6b7280] leading-relaxed">
         {aiSource === 'groq'
           ? 'Analysis generated by Llama 3.3 70B via Groq API using real province-level forestry data. Cross-reference with MARD reports for due diligence.'
           : 'Fallback to client-side statistical modeling. Set GROQ_API_KEY in .env.local for AI-powered analysis.'}
@@ -446,7 +446,7 @@ export default function AIAnalysisPanel({ year, selectedProvince, density = 'com
 
   const worldBankBlock = realData && realData.length > 0 && (
     <div className="mt-1">
-      <h4 className="text-xs text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+      <h4 className="text-xs text-[#374151] uppercase tracking-wider mb-2 flex items-center gap-1.5">
         <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
         Real Data — World Bank Open Data
       </h4>
@@ -454,7 +454,7 @@ export default function AIAnalysisPanel({ year, selectedProvince, density = 'com
         <div className="p-2.5 rounded-lg bg-blue-500/[0.06] border border-blue-500/15">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-blue-400 font-medium">Vietnam Forest Area (Real)</span>
-            <span className="text-[11px] text-gray-500 px-1.5 py-0.5 rounded bg-blue-500/10 border border-blue-500/10">
+            <span className="text-[11px] text-[#6b7280] px-1.5 py-0.5 rounded bg-blue-500/10 border border-blue-500/10">
               AG.LND.FRST.K2
             </span>
           </div>
@@ -496,8 +496,8 @@ export default function AIAnalysisPanel({ year, selectedProvince, density = 'com
             </defs>
           </svg>
           <div className="flex items-center justify-between mt-1.5">
-            <span className="text-[11px] text-gray-500">{realData[0].year}</span>
-            <span className="text-[11px] text-gray-500">{realData[realData.length - 1].year}</span>
+            <span className="text-[11px] text-[#6b7280]">{realData[0].year}</span>
+            <span className="text-[11px] text-[#6b7280]">{realData[realData.length - 1].year}</span>
           </div>
         </div>
 
@@ -507,14 +507,14 @@ export default function AIAnalysisPanel({ year, selectedProvince, density = 'com
           const changePct = ((latest.forestAreaHa - earliest.forestAreaHa) / earliest.forestAreaHa * 100);
           return (
             <div className="grid grid-cols-2 gap-1.5">
-              <div className="p-2 rounded-md bg-white/[0.03] border border-white/[0.05]">
-                <div className="text-[11px] text-gray-500 mb-0.5">Latest ({latest.year})</div>
-                <div className="text-[11px] text-white font-bold">
+              <div className="p-2 rounded-md bg-[#35b779]/[0.05] border border-[#35b779]/[0.10]">
+                <div className="text-[11px] text-[#6b7280] mb-0.5">Latest ({latest.year})</div>
+                <div className="text-[11px] text-[#111827] font-bold">
                   {(latest.forestAreaHa / 1_000_000).toFixed(2)}M ha
                 </div>
               </div>
-              <div className="p-2 rounded-md bg-white/[0.03] border border-white/[0.05]">
-                <div className="text-[11px] text-gray-500 mb-0.5">Change since {earliest.year}</div>
+              <div className="p-2 rounded-md bg-[#35b779]/[0.05] border border-[#35b779]/[0.10]">
+                <div className="text-[11px] text-[#6b7280] mb-0.5">Change since {earliest.year}</div>
                 <div className={`text-[11px] font-bold ${changePct >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                   {changePct >= 0 ? '+' : ''}{changePct.toFixed(1)}%
                 </div>
@@ -528,23 +528,23 @@ export default function AIAnalysisPanel({ year, selectedProvince, density = 'com
           const modelTotal = provinces.reduce((s, p) => s + interpolateYear(p.forestCover, wbForYear.year), 0);
           const diff = ((modelTotal - wbForYear.forestAreaHa) / wbForYear.forestAreaHa * 100);
           return (
-            <div className="p-2 rounded-md bg-white/[0.03] border border-white/[0.05]">
+            <div className="p-2 rounded-md bg-[#35b779]/[0.05] border border-[#35b779]/[0.10]">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] text-gray-500">Model vs Real ({wbForYear.year})</span>
+                <span className="text-[11px] text-[#6b7280]">Model vs Real ({wbForYear.year})</span>
                 <span className={`text-[11px] font-bold ${Math.abs(diff) < 10 ? 'text-green-400' : Math.abs(diff) < 25 ? 'text-amber-400' : 'text-red-400'}`}>
                   {diff >= 0 ? '+' : ''}{diff.toFixed(1)}% deviation
                 </span>
               </div>
               <div className="flex items-center gap-2 mt-1.5">
                 <div className="flex-1">
-                  <div className="h-1 rounded-full bg-white/[0.06] overflow-hidden">
+                  <div className="h-1 rounded-full bg-[#35b779]/[0.08] overflow-hidden">
                     <div
                       className={`h-full rounded-full ${Math.abs(diff) < 10 ? 'bg-green-400' : Math.abs(diff) < 25 ? 'bg-amber-400' : 'bg-red-400'}`}
                       style={{ width: `${Math.min(100, 100 - Math.abs(diff))}%` }}
                     />
                   </div>
                 </div>
-                <span className="text-[11px] text-gray-500">
+                <span className="text-[11px] text-[#6b7280]">
                   {Math.abs(diff) < 10 ? 'Validated' : Math.abs(diff) < 25 ? 'Acceptable' : 'Needs calibration'}
                 </span>
               </div>
@@ -552,7 +552,7 @@ export default function AIAnalysisPanel({ year, selectedProvince, density = 'com
           );
         })()}
 
-        <p className="text-[11px] text-gray-600 leading-relaxed">
+        <p className="text-[11px] text-[#9ca3af] leading-relaxed">
           Source: World Bank Open Data (AG.LND.FRST.K2). Updated daily. Forest area measured in sq. km converted to hectares.
         </p>
       </div>
@@ -578,9 +578,9 @@ export default function AIAnalysisPanel({ year, selectedProvince, density = 'com
             </aside>
             <section className="min-w-0 space-y-3">
               {!insights.length && !analyzing && (
-                <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-6 text-center">
+                <div className="rounded-xl border border-[#35b779]/[0.15] bg-[#35b779]/[0.04] p-6 text-center">
                   <Sparkles className="w-6 h-6 text-accent/60 mx-auto mb-2" />
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-[#374151]">
                     Click <span className="text-accent">Generate AI Analysis</span> to surface trends,
                     forecasts, and EUDR compliance signals for {selected ? selected.name : 'all provinces'}.
                   </p>

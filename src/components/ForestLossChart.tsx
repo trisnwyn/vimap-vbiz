@@ -40,15 +40,15 @@ export default function ForestLossChart({ selectedProvince }: ForestLossChartPro
     <div className="w-full" style={{ minHeight: 180 }}>
       <ResponsiveContainer width="100%" height={180}>
         <BarChart data={data} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(53,183,121,0.12)" />
           <XAxis
             dataKey="year"
-            tick={{ fill: '#888', fontSize: 11 }}
-            axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+            tick={{ fill: '#374151', fontSize: 11 }}
+            axisLine={{ stroke: 'rgba(53,183,121,0.18)' }}
             tickLine={false}
           />
           <YAxis
-            tick={{ fill: '#888', fontSize: 11 }}
+            tick={{ fill: '#374151', fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}M` : `${v}K`}
@@ -56,11 +56,11 @@ export default function ForestLossChart({ selectedProvince }: ForestLossChartPro
           />
           <Tooltip
             contentStyle={{
-              background: 'rgba(10,14,20,0.95)',
-              border: '1px solid rgba(255,255,255,0.1)',
+              background: 'rgba(250,248,243,0.95)',
+              border: '1px solid rgba(53,183,121,0.2)',
               borderRadius: 8,
               fontSize: 11,
-              color: '#e0e0e0',
+              color: '#111827',
             }}
             formatter={(value, name) => [
               `${Number(value).toLocaleString()}K ha`,
@@ -69,18 +69,18 @@ export default function ForestLossChart({ selectedProvince }: ForestLossChartPro
           />
           <ReferenceLine
             x="2024"
-            stroke="#ff6b6b"
+            stroke="#c0392b"
             strokeDasharray="3 3"
             label={{
               value: 'EUDR',
               position: 'top',
-              fill: '#ff6b6b',
+              fill: '#c0392b',
               fontSize: 11,
             }}
           />
           <Bar
             dataKey="forestCover"
-            fill="#1b7a2e"
+            fill="#35b779"
             radius={[4, 4, 0, 0]}
             name="Forest Cover"
           />

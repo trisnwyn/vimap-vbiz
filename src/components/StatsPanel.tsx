@@ -46,12 +46,12 @@ export default function StatsPanel({ year, selectedProvince }: StatsPanelProps) 
       {selected && (
         <div className="animate-fade-in">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-bold text-white">{selected.name}</h3>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-gray-300">
+            <h3 className="text-sm font-bold text-[#111827]">{selected.name}</h3>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-[#35b779]/12 text-[#1f2937]">
               {selected.region}
             </span>
           </div>
-          <div className="text-xs text-gray-500 flex items-center gap-2 mb-3">
+          <div className="text-xs text-[#6b7280] flex items-center gap-2 mb-3">
             <MapPin className="w-3 h-3" />
             {selected.lat.toFixed(2)}°N, {selected.lng.toFixed(2)}°E
             <span className="mx-1">·</span>
@@ -64,52 +64,52 @@ export default function StatsPanel({ year, selectedProvince }: StatsPanelProps) 
         <div className="stat-card animate-fade-in">
           <div className="flex items-center gap-1.5 mb-1.5">
             <TreePine className="w-3.5 h-3.5 text-green-400" />
-            <span className="text-xs text-gray-400 uppercase tracking-wider">Forest Cover</span>
+            <span className="text-xs text-[#374151] uppercase tracking-wider">Forest Cover</span>
           </div>
-          <div className="text-lg font-bold text-white font-mono animate-count">
+          <div className="text-lg font-bold text-[#111827] font-mono animate-count">
             {formatNum(stats.totalForest)}
           </div>
-          <div className="text-xs text-gray-500">hectares</div>
+          <div className="text-xs text-[#6b7280]">hectares</div>
         </div>
 
         <div className="stat-card animate-fade-in" style={{ animationDelay: '0.05s' }}>
           <div className="flex items-center gap-1.5 mb-1.5">
             <TrendingDown className="w-3.5 h-3.5 text-orange-400" />
-            <span className="text-xs text-gray-400 uppercase tracking-wider">Annual Loss</span>
+            <span className="text-xs text-[#374151] uppercase tracking-wider">Annual Loss</span>
           </div>
           <div className="text-lg font-bold text-orange-400 font-mono animate-count">
             {formatNum(stats.totalLoss)}
           </div>
-          <div className="text-xs text-gray-500">ha / year</div>
+          <div className="text-xs text-[#6b7280]">ha / year</div>
         </div>
 
         <div className="stat-card animate-fade-in" style={{ animationDelay: '0.1s' }}>
           <div className="flex items-center gap-1.5 mb-1.5">
             <TrendingDown className="w-3.5 h-3.5 text-yellow-400" />
-            <span className="text-xs text-gray-400 uppercase tracking-wider">Loss Rate</span>
+            <span className="text-xs text-[#374151] uppercase tracking-wider">Loss Rate</span>
           </div>
           <div className="text-lg font-bold text-yellow-300 font-mono animate-count">
             {(stats.avgLossRate * 100).toFixed(2)}%
           </div>
-          <div className="text-xs text-gray-500">avg. annual</div>
+          <div className="text-xs text-[#6b7280]">avg. annual</div>
         </div>
 
         <div className="stat-card animate-fade-in" style={{ animationDelay: '0.15s' }}>
           <div className="flex items-center gap-1.5 mb-1.5">
             <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
-            <span className="text-xs text-gray-400 uppercase tracking-wider">High Risk</span>
+            <span className="text-xs text-[#374151] uppercase tracking-wider">High Risk</span>
           </div>
           <div className="text-lg font-bold text-red-400 font-mono animate-count">
             {stats.highRisk.length}
           </div>
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-[#6b7280]">
             province{stats.highRisk.length !== 1 ? 's' : ''}
           </div>
         </div>
       </div>
 
       <div className="mt-1">
-        <h4 className="text-xs text-gray-400 uppercase tracking-wider mb-2">
+        <h4 className="text-xs text-[#374151] uppercase tracking-wider mb-2">
           Forest Loss Trend
         </h4>
         <ForestLossChart selectedProvince={selectedProvince} />
@@ -119,12 +119,12 @@ export default function StatsPanel({ year, selectedProvince }: StatsPanelProps) 
 
       <div className="mt-1 flex items-center gap-2">
         <DataSourceBadge source="modeled" />
-        <span className="text-[11px] text-gray-600">Province-level estimates</span>
+        <span className="text-[11px] text-[#9ca3af]">Province-level estimates</span>
       </div>
 
       {stats.highRisk.length > 0 && (
         <div className="mt-1">
-          <h4 className="text-xs text-gray-400 uppercase tracking-wider mb-2">
+          <h4 className="text-xs text-[#374151] uppercase tracking-wider mb-2">
             High-Risk Provinces ({year})
           </h4>
           <div className="space-y-1">
@@ -138,11 +138,11 @@ export default function StatsPanel({ year, selectedProvince }: StatsPanelProps) 
               .map((p) => (
                 <div
                   key={p.id}
-                  className="flex items-center justify-between px-2 py-1.5 rounded-md bg-white/[0.03] hover:bg-white/[0.06] transition-colors"
+                  className="flex items-center justify-between px-2 py-1.5 rounded-md bg-[#35b779]/[0.05] hover:bg-[#35b779]/[0.08] transition-colors"
                 >
                   <div>
-                    <span className="text-xs text-white">{p.name}</span>
-                    <span className="text-xs text-gray-500 ml-1.5">{p.primaryCrop}</span>
+                    <span className="text-xs text-[#111827]">{p.name}</span>
+                    <span className="text-xs text-[#6b7280] ml-1.5">{p.primaryCrop}</span>
                   </div>
                   <span className="text-xs font-mono text-red-400 font-bold">
                     {(interpolateYear(p.lossRate, year) * 100).toFixed(1)}%

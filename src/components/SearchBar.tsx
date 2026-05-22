@@ -54,13 +54,13 @@ export default function SearchBar({ onSelect }: SearchBarProps) {
       {!open ? (
         <button
           onClick={() => setOpen(true)}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] transition-all"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] text-[#374151] hover:text-[#111827] glass-btn transition-all"
         >
           <Search className="w-3 h-3" />
           <span>Search provinces...</span>
         </button>
       ) : (
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.08] border border-accent/30 min-w-[220px]">
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#35b779]/[0.10] border border-accent/30 min-w-[220px]">
           <Search className="w-3 h-3 text-accent shrink-0" />
           <input
             ref={inputRef}
@@ -71,14 +71,14 @@ export default function SearchBar({ onSelect }: SearchBarProps) {
             role="combobox"
             aria-expanded={results.length > 0}
             aria-autocomplete="list"
-            className="flex-1 bg-transparent text-[11px] text-white outline-none placeholder:text-gray-500"
+            className="flex-1 bg-transparent text-[11px] text-[#111827] outline-none placeholder:text-[#9ca3af]"
           />
           <button
             onClick={() => {
               setQuery('');
               setOpen(false);
             }}
-            className="text-gray-500 hover:text-white"
+            className="text-[#6b7280] hover:text-[#111827]"
           >
             <X className="w-3 h-3" />
           </button>
@@ -86,21 +86,21 @@ export default function SearchBar({ onSelect }: SearchBarProps) {
       )}
 
       {open && results.length > 0 && (
-        <div role="listbox" className="absolute top-full mt-1 left-0 right-0 glass-panel rounded-lg border border-white/[0.08] py-1 z-50 min-w-[260px] animate-fade-in max-h-[300px] overflow-y-auto">
+        <div role="listbox" className="absolute top-full mt-1 left-0 right-0 glass-panel rounded-lg border border-[#35b779]/[0.20] py-1 z-50 min-w-[260px] animate-fade-in max-h-[300px] overflow-y-auto">
           {results.map((p) => (
             <button
               key={p.id}
               onClick={() => handleSelect(p.id)}
               role="option"
-              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/[0.06] transition-colors text-left"
+              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-[#35b779]/[0.08] transition-colors text-left"
             >
               <MapPin className="w-3 h-3 text-accent shrink-0" />
               <div className="flex-1 min-w-0">
-                <div className="text-[11px] text-white truncate">
+                <div className="text-[11px] text-[#111827] truncate">
                   {p.name}
-                  <span className="text-gray-500 ml-1">({p.nameVi})</span>
+                  <span className="text-[#6b7280] ml-1">({p.nameVi})</span>
                 </div>
-                <div className="text-[11px] text-gray-500 flex gap-2">
+                <div className="text-[11px] text-[#6b7280] flex gap-2">
                   <span>{p.region}</span>
                   <span>·</span>
                   <span>{p.primaryCrop}</span>
@@ -112,8 +112,8 @@ export default function SearchBar({ onSelect }: SearchBarProps) {
       )}
 
       {open && query.length > 0 && results.length === 0 && (
-        <div className="absolute top-full mt-1 left-0 right-0 glass-panel rounded-lg border border-white/[0.08] p-3 z-50 min-w-[220px] animate-fade-in">
-          <p className="text-xs text-gray-500 text-center">No provinces found</p>
+        <div className="absolute top-full mt-1 left-0 right-0 glass-panel rounded-lg border border-[#35b779]/[0.20] p-3 z-50 min-w-[220px] animate-fade-in">
+          <p className="text-xs text-[#6b7280] text-center">No provinces found</p>
         </div>
       )}
     </div>

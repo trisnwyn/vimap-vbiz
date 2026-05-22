@@ -56,14 +56,14 @@ export default function BasemapSwitcher({ value, onChange }: BasemapSwitcherProp
     <div className="absolute top-16 right-3 z-20">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-8 h-8 rounded-lg glass-panel flex items-center justify-center text-gray-400 hover:text-white transition-colors border border-white/[0.08]"
+        className="w-8 h-8 rounded-lg glass-panel flex items-center justify-center text-[#374151] hover:text-[#111827] transition-colors border border-[#35b779]/[0.20]"
         title="Change basemap"
       >
         <Map className="w-4 h-4" />
       </button>
 
       {open && (
-        <div role="menu" className="absolute top-10 right-0 glass-panel rounded-lg border border-white/[0.08] p-1.5 animate-fade-in min-w-[120px]">
+        <div role="menu" className="absolute top-10 right-0 glass-panel rounded-lg border border-[#35b779]/[0.20] p-1.5 animate-fade-in min-w-[120px]">
           {STYLES.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -74,7 +74,7 @@ export default function BasemapSwitcher({ value, onChange }: BasemapSwitcherProp
               className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[11px] transition-all ${
                 value === id
                   ? 'bg-accent/15 text-accent'
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  : 'text-[#374151] hover:text-[#111827] hover:bg-[#35b779]/8'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />

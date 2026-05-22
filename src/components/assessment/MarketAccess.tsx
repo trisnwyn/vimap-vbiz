@@ -13,11 +13,11 @@ interface Props {
 }
 
 function logisticsTier(km: number): { label: string; color: string } {
-  if (km < 50)  return { label: 'Excellent — same metro', color: 'text-emerald-300' };
-  if (km < 150) return { label: 'Strong — short haul',    color: 'text-green-300' };
-  if (km < 300) return { label: 'Moderate — regional',    color: 'text-yellow-300' };
-  if (km < 500) return { label: 'Constrained — long haul',color: 'text-orange-300' };
-  return            { label: 'Difficult — inland',        color: 'text-red-300' };
+  if (km < 50)  return { label: 'Excellent — same metro', color: 'text-emerald-600' };
+  if (km < 150) return { label: 'Strong — short haul',    color: 'text-green-600' };
+  if (km < 300) return { label: 'Moderate — regional',    color: 'text-yellow-600' };
+  if (km < 500) return { label: 'Constrained — long haul',color: 'text-orange-500' };
+  return            { label: 'Difficult — inland',        color: 'text-red-500' };
 }
 
 export default function MarketAccess({ port, province, region, areaHa, coordinates, bare = false }: Props) {
@@ -25,16 +25,16 @@ export default function MarketAccess({ port, province, region, areaHa, coordinat
 
   const body = (
     <>
-      <div className="rounded-md bg-white/[0.03] border border-white/[0.04] p-2 mb-2">
+      <div className="rounded-md bg-[#35b779]/[0.05] border border-[#35b779]/[0.10] p-2 mb-2">
         <div className="flex items-center gap-2">
-          <Anchor className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+          <Anchor className="w-3.5 h-3.5 text-blue-500 shrink-0" />
           <div className="flex-1 min-w-0">
-            <div className="text-xs font-bold text-white truncate">{port.name}</div>
-            <div className="text-[10px] text-gray-500">Nearest export port</div>
+            <div className="text-xs font-bold text-[#111827] truncate">{port.name}</div>
+            <div className="text-[10px] text-[#6b7280]">Nearest export port</div>
           </div>
           <div className="text-right shrink-0">
-            <div className="text-sm font-bold text-white font-mono">{port.distanceKm}</div>
-            <div className="text-[10px] text-gray-500">km</div>
+            <div className="text-sm font-bold text-[#111827] font-mono">{port.distanceKm}</div>
+            <div className="text-[10px] text-[#6b7280]">km</div>
           </div>
         </div>
         <div className={`text-[11px] mt-1 ${tier.color}`}>
@@ -44,20 +44,20 @@ export default function MarketAccess({ port, province, region, areaHa, coordinat
       </div>
 
       <div className="grid grid-cols-2 gap-1.5">
-        <div className="rounded-md bg-white/[0.03] border border-white/[0.04] px-2 py-1.5">
+        <div className="rounded-md bg-[#35b779]/[0.05] border border-[#35b779]/[0.10] px-2 py-1.5">
           <div className="flex items-center gap-1 mb-0.5">
-            <MapPin className="w-3 h-3 text-gray-400" />
-            <span className="text-[10px] text-gray-500 uppercase tracking-wider">Region</span>
+            <MapPin className="w-3 h-3 text-[#6b7280]" />
+            <span className="text-[10px] text-[#6b7280] uppercase tracking-wider">Region</span>
           </div>
-          <div className="text-xs font-bold text-white">{region}</div>
-          <div className="text-[10px] text-gray-500 truncate">via {province}</div>
+          <div className="text-xs font-bold text-[#111827]">{region}</div>
+          <div className="text-[10px] text-[#6b7280] truncate">via {province}</div>
         </div>
-        <div className="rounded-md bg-white/[0.03] border border-white/[0.04] px-2 py-1.5">
-          <div className="text-[10px] text-gray-500 uppercase tracking-wider">Area</div>
-          <div className="text-xs font-bold text-white font-mono">
+        <div className="rounded-md bg-[#35b779]/[0.05] border border-[#35b779]/[0.10] px-2 py-1.5">
+          <div className="text-[10px] text-[#6b7280] uppercase tracking-wider">Area</div>
+          <div className="text-xs font-bold text-[#111827] font-mono">
             {areaHa.toLocaleString()} ha
           </div>
-          <div className="text-[10px] text-gray-500 font-mono">
+          <div className="text-[10px] text-[#6b7280] font-mono">
             {coordinates.lat.toFixed(2)}°N, {coordinates.lng.toFixed(2)}°E
           </div>
         </div>
@@ -68,9 +68,9 @@ export default function MarketAccess({ port, province, region, areaHa, coordinat
   if (bare) return body;
 
   return (
-    <div className="rounded-xl p-3 border border-white/[0.06] bg-white/[0.02] animate-fade-in">
-      <h4 className="text-xs text-gray-300 font-semibold uppercase tracking-wider mb-2">
-        Market & Logistics
+    <div className="rounded-xl p-3 border border-[#35b779]/[0.15] bg-white/60 shadow-sm animate-fade-in">
+      <h4 className="text-xs text-[#1f2937] font-semibold uppercase tracking-wider mb-2">
+        Market &amp; Logistics
       </h4>
       {body}
     </div>

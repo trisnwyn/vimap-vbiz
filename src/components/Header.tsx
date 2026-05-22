@@ -43,17 +43,17 @@ export default function Header({
   selectedProvince,
 }: HeaderProps) {
   return (
-    <header className="glass-panel flex items-center justify-between px-5 py-3 z-50 border-b border-white/[0.06]">
+    <header className="glass-panel flex items-center justify-between px-5 py-3 z-50 border-b border-[#35b779]/[0.15]">
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
           <TreePine className="w-5 h-5 text-accent" />
         </div>
         <div>
-          <h1 className="text-base font-bold tracking-tight text-white leading-none">
+          <h1 className="text-base font-bold tracking-tight text-[#111827] leading-none">
             VinMap
             <span className="text-accent ml-1 text-xs font-medium align-top">BETA</span>
           </h1>
-          <p className="text-xs text-gray-500 leading-none mt-0.5">
+          <p className="text-xs text-[#6b7280] leading-none mt-0.5">
             Vietnam Land Use & Cover Intelligence
           </p>
         </div>
@@ -72,7 +72,7 @@ export default function Header({
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               activeTab === id
                 ? 'bg-accent/15 text-accent'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                : 'text-[#374151] hover:text-[#111827] hover:bg-[#35b779]/8'
             }`}
           >
             <Icon className="w-3.5 h-3.5" />
@@ -96,10 +96,10 @@ export default function Header({
             <button
               key={key}
               onClick={toggle}
-              className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all ${
+              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-all glass-btn ${
                 active
-                  ? 'bg-white/10 text-white'
-                  : 'text-gray-600 hover:text-gray-400'
+                  ? 'text-[#111827] !border-[#35b779]/25 !bg-[#35b779]/[0.10]'
+                  : 'text-[#6b7280] hover:text-[#1f2937]'
               }`}
               title={`Toggle ${label}`}
             >
@@ -116,7 +116,7 @@ export default function Header({
         <div
           role="group"
           aria-label="View mode"
-          className="hidden sm:inline-flex items-center bg-white/5 border border-white/[0.06] rounded-lg p-0.5"
+          className="hidden sm:inline-flex items-center glass-btn rounded-lg p-0.5"
         >
           {([
             { id: 'map'   as ViewMode, label: 'Map',   icon: MapIcon },
@@ -130,7 +130,7 @@ export default function Header({
               className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium transition-all ${
                 viewMode === id
                   ? 'bg-accent/15 text-accent'
-                  : 'text-gray-400 hover:text-white'
+                  : 'text-[#374151] hover:text-[#111827]'
               }`}
             >
               <Icon className="w-3 h-3" />
@@ -139,9 +139,9 @@ export default function Header({
           ))}
         </div>
 
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/[0.06]">
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg glass-btn">
           <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-xs font-mono text-white font-bold">{year}</span>
+          <span className="text-xs font-mono text-[#111827] font-bold">{year}</span>
         </div>
       </div>
     </header>

@@ -2,7 +2,7 @@ export const categoryColors: Record<string, string> = {
   eudr: '#ff6b6b',
   deforestation: '#ffa726',
   policy: '#42a5f5',
-  climate: '#66bb6a',
+  climate: '#35b779',
   agriculture: '#e8d44d',
 };
 

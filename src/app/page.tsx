@@ -22,10 +22,10 @@ import { useURLState, useInitialURLState, type ViewMode } from '@/hooks/useURLSt
 const MapView = dynamic(() => import('@/components/MapView'), {
   ssr: false,
   loading: () => (
-    <div className="flex-1 flex items-center justify-center bg-[#060a0e]">
+    <div className="flex-1 flex items-center justify-center bg-[#faf8f3]">
       <div className="text-center">
         <div className="w-10 h-10 rounded-full border-2 border-accent/30 border-t-accent mx-auto mb-3 animate-spin" />
-        <p className="text-xs text-gray-500">Loading map...</p>
+        <p className="text-xs text-[#6b7280]">Loading map...</p>
       </div>
     </div>
   ),
@@ -36,7 +36,7 @@ const LandAssessmentPanel = dynamic(() => import('@/components/assessment/LandAs
     <div className="h-full flex items-center justify-center p-6">
       <div className="text-center">
         <div className="w-8 h-8 rounded-full border-2 border-accent/30 border-t-accent mx-auto mb-2 animate-spin" />
-        <p className="text-xs text-gray-500">Loading assessment...</p>
+        <p className="text-xs text-[#6b7280]">Loading assessment...</p>
       </div>
     </div>
   ),
@@ -172,18 +172,18 @@ function Dashboard() {
               <div className="h-16" />
             </section>
 
-            <aside className="hidden md:flex w-[340px] lg:w-[380px] shrink-0 flex-col border-l border-white/[0.06] bg-[#070b10]">
-              <div className="p-3 border-b border-white/[0.06]">
-                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1.5">Reference Map</div>
-                <div className="relative h-[260px] rounded-lg overflow-hidden border border-white/[0.08]">
+            <aside className="hidden md:flex w-[340px] lg:w-[380px] shrink-0 flex-col border-l border-[#35b779]/[0.15] bg-[#f5f0e8]">
+              <div className="p-3 border-b border-[#35b779]/[0.15]">
+                <div className="text-[10px] text-[#6b7280] uppercase tracking-wider mb-1.5">Reference Map</div>
+                <div className="relative h-[260px] rounded-lg overflow-hidden border border-[#35b779]/[0.20]">
                   {mapView}
                 </div>
-                <p className="text-[10px] text-gray-500 mt-1.5 leading-snug">
+                <p className="text-[10px] text-[#6b7280] mt-1.5 leading-snug">
                   Click a province or draw a polygon to drive the assessment.
                 </p>
               </div>
               {selectedProvince && showDetail && (
-                <div className="p-3 border-b border-white/[0.06]">
+                <div className="p-3 border-b border-[#35b779]/[0.15]">
                   <ProvinceDetail
                     provinceId={selectedProvince}
                     year={year}
@@ -203,14 +203,14 @@ function Dashboard() {
         <div className="flex-1 flex overflow-hidden relative">
           {sidebarOpen && (
             <div
-              className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+              className="fixed inset-0 bg-[#111827]/20 z-30 lg:hidden"
               onClick={() => setSidebarOpen(false)}
             />
           )}
 
           <aside className={`
             fixed lg:relative inset-y-0 left-0 z-40 lg:z-auto
-            w-[280px] shrink-0 glass-panel border-r border-white/[0.06]
+            w-[280px] shrink-0 glass-panel border-r border-[#35b779]/[0.15]
             overflow-hidden transition-transform duration-300 ease-in-out
             ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           `}>
@@ -220,7 +220,7 @@ function Dashboard() {
           <main className="flex-1 relative overflow-hidden">
             <button
               onClick={() => setSidebarOpen((o) => !o)}
-              className="absolute top-3 left-3 z-20 lg:hidden w-9 h-9 rounded-lg glass-panel flex items-center justify-center text-gray-400 hover:text-white border border-white/[0.08] transition-colors"
+              className="absolute top-3 left-3 z-20 lg:hidden w-9 h-9 rounded-lg glass-panel flex items-center justify-center text-[#374151] hover:text-[#111827] border border-[#35b779]/[0.20] transition-colors"
               aria-label="Toggle sidebar"
             >
               <Menu className="w-4 h-4" />
@@ -253,10 +253,10 @@ function Dashboard() {
 export default function Home() {
   return (
     <Suspense fallback={
-      <div className="h-screen w-screen flex items-center justify-center bg-[#060a0e]">
+      <div className="h-screen w-screen flex items-center justify-center bg-[#faf8f3]">
         <div className="text-center">
           <div className="w-10 h-10 rounded-full border-2 border-accent/30 border-t-accent mx-auto mb-3 animate-spin" />
-          <p className="text-xs text-gray-500">Loading VinMap...</p>
+          <p className="text-xs text-[#6b7280]">Loading VinMap...</p>
         </div>
       </div>
     }>

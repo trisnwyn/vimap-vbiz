@@ -53,7 +53,7 @@ export default function InvestmentScore({ score, rating, dataCompleteness }: Pro
       <div className="flex items-center gap-4">
         <div className="relative w-[96px] h-[96px] shrink-0" role="img" aria-label={`Investment score ${score} out of 100`}>
           <svg viewBox="0 0 96 96" className="-rotate-90 w-full h-full">
-            <circle cx="48" cy="48" r={RADIUS} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="7" />
+            <circle cx="48" cy="48" r={RADIUS} fill="none" stroke="rgba(53,183,121,0.12)" strokeWidth="7" />
             <circle
               cx="48" cy="48" r={RADIUS}
               fill="none"
@@ -67,20 +67,20 @@ export default function InvestmentScore({ score, rating, dataCompleteness }: Pro
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className={`text-2xl font-bold font-mono ${meta.color}`}>{displayed}</span>
-            <span className="text-[10px] text-gray-500 uppercase tracking-wider">/ 100</span>
+            <span className="text-[10px] text-[#6b7280] uppercase tracking-wider">/ 100</span>
           </div>
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="text-[11px] text-gray-400 uppercase tracking-wider mb-1">
+          <div className="text-[11px] text-[#374151] uppercase tracking-wider mb-1">
             Investment Score
           </div>
           <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md ${meta.bg} ${meta.border} border ${meta.color} text-xs font-bold`}>
             <Icon className="w-3 h-3" aria-hidden="true" />
             {meta.label}
           </div>
-          <div className="mt-2 flex items-center gap-1.5 text-[11px] text-gray-500">
-            <div className="flex-1 h-1 rounded-full bg-white/[0.05] overflow-hidden">
+          <div className="mt-2 flex items-center gap-1.5 text-[11px] text-[#6b7280]">
+            <div className="flex-1 h-1 rounded-full bg-[#35b779]/[0.08] overflow-hidden">
               <div
                 className="h-full bg-accent/60 transition-all duration-500"
                 style={{ width: `${completePct}%` }}
@@ -88,7 +88,7 @@ export default function InvestmentScore({ score, rating, dataCompleteness }: Pro
             </div>
             <span className="font-mono">{completePct}%</span>
           </div>
-          <div className="text-[10px] text-gray-500 mt-0.5 flex items-center gap-1">
+          <div className="text-[10px] text-[#6b7280] mt-0.5 flex items-center gap-1">
             {completePct < 60 && <AlertCircle className="w-2.5 h-2.5 text-yellow-500" />}
             data completeness
           </div>

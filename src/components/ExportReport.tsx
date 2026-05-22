@@ -55,24 +55,24 @@ export default function ExportReport({ year, selectedProvince }: ExportReportPro
       @page { margin: 15mm; size: A4 landscape; }
     }
     body { font-family: -apple-system, 'Segoe UI', sans-serif; color: #111827; max-width: 1100px; margin: 0 auto; padding: 24px; }
-    .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #00dc82; padding-bottom: 16px; margin-bottom: 24px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #35b779; padding-bottom: 16px; margin-bottom: 24px; }
     .logo { font-size: 28px; font-weight: 800; color: #111827; }
-    .logo span { color: #00dc82; }
+    .logo span { color: #35b779; }
     .subtitle { font-size: 12px; color: #6b7280; margin-top: 4px; }
     .meta { text-align: right; font-size: 11px; color: #6b7280; }
     .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
     .stat-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px; }
     .stat-label { font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
     .stat-value { font-size: 22px; font-weight: 700; margin-top: 4px; font-family: 'SF Mono', monospace; }
-    .section-title { font-size: 14px; font-weight: 700; color: #111827; margin: 20px 0 10px; border-left: 3px solid #00dc82; padding-left: 10px; }
+    .section-title { font-size: 14px; font-weight: 700; color: #111827; margin: 20px 0 10px; border-left: 3px solid #35b779; padding-left: 10px; }
     table { width: 100%; border-collapse: collapse; font-size: 11px; }
     th { text-align: left; padding: 8px 10px; background: #f3f4f6; border-bottom: 2px solid #d1d5db; font-size: 10px; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em; }
     .risk-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; }
     .risk-critical { background: #fef2f2; color: #dc2626; }
     .risk-elevated { background: #fffbeb; color: #d97706; }
     .disclaimer { margin-top: 30px; padding: 12px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 9px; color: #9ca3af; }
-    .print-btn { position: fixed; bottom: 20px; right: 20px; background: #00dc82; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(0,220,130,0.3); }
-    .print-btn:hover { background: #00c472; }
+    .print-btn { position: fixed; bottom: 20px; right: 20px; background: #35b779; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(53,183,121,0.3); }
+    .print-btn:hover { background: #245a42; }
   </style>
 </head>
 <body>
@@ -166,7 +166,7 @@ export default function ExportReport({ year, selectedProvince }: ExportReportPro
   return (
     <button
       onClick={handleExport}
-      className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] transition-all"
+      className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-[#374151] hover:text-[#111827] glass-btn transition-all"
       title="Export PDF Report"
     >
       <FileDown className="w-3 h-3" />

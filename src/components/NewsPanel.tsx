@@ -38,16 +38,16 @@ export default function NewsPanel({ year, selectedNewsId, onNewsSelect }: NewsPa
   return (
     <div className="h-full flex flex-col gap-3 p-3 overflow-hidden">
       <div>
-        <h3 className="text-xs font-bold text-white mb-2">News Intelligence</h3>
+        <h3 className="text-xs font-bold text-[#111827] mb-2">News Intelligence</h3>
         <div className="flex flex-wrap gap-1">
           {CATEGORIES.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setFilter(cat.id)}
-              className={`px-2 py-0.5 rounded-full text-xs font-medium transition-all ${
+              className={`px-2 py-0.5 text-xs font-medium transition-all glass-pill ${
                 filter === cat.id
-                  ? 'bg-accent/15 text-accent'
-                  : 'text-gray-500 hover:text-gray-300 bg-white/[0.03]'
+                  ? 'active text-accent'
+                  : 'text-[#374151] hover:text-[#111827]'
               }`}
             >
               {cat.label}
@@ -56,7 +56,7 @@ export default function NewsPanel({ year, selectedNewsId, onNewsSelect }: NewsPa
         </div>
       </div>
 
-      <div className="text-xs text-gray-500">
+      <div className="text-xs text-[#6b7280]">
         {filtered.length} article{filtered.length !== 1 ? 's' : ''} through {year}
       </div>
 
@@ -73,16 +73,16 @@ export default function NewsPanel({ year, selectedNewsId, onNewsSelect }: NewsPa
               <span
                 className={`w-2 h-2 rounded-full mt-1 shrink-0 category-${article.category}`}
                 style={{
-                  backgroundColor: categoryColors[article.category] ?? '#e8d44d',
+                  backgroundColor: categoryColors[article.category] ?? '#a67c00',
                 }}
               />
-              <h4 className="text-xs text-white font-medium leading-snug line-clamp-2">
+              <h4 className="text-xs text-[#111827] font-medium leading-snug line-clamp-2">
                 {article.title}
               </h4>
             </div>
 
-            <div className="flex items-center gap-2 text-xs text-gray-500 mb-1.5">
-              <span className="font-medium text-gray-400">{article.source}</span>
+            <div className="flex items-center gap-2 text-xs text-[#6b7280] mb-1.5">
+              <span className="font-medium text-[#374151]">{article.source}</span>
               <span className="flex items-center gap-0.5">
                 <Calendar className="w-2.5 h-2.5" />
                 {new Date(article.date).toLocaleDateString('en-US', {
@@ -95,11 +95,11 @@ export default function NewsPanel({ year, selectedNewsId, onNewsSelect }: NewsPa
 
             {article.id === selectedNewsId && (
               <div className="animate-fade-in">
-                <p className="text-[11px] text-gray-300 leading-relaxed mb-2">
+                <p className="text-[11px] text-[#1f2937] leading-relaxed mb-2">
                   {article.summary}
                 </p>
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1 text-[11px] text-gray-500">
+                  <span className="flex items-center gap-1 text-[11px] text-[#6b7280]">
                     <MapPin className="w-2.5 h-2.5" />
                     {article.lat.toFixed(2)}°N, {article.lng.toFixed(2)}°E
                   </span>

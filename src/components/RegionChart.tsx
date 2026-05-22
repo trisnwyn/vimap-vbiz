@@ -40,32 +40,32 @@ export default function RegionChart({ year }: RegionChartProps) {
 
   return (
     <div className="mt-1">
-      <h4 className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+      <h4 className="text-xs text-[#374151] uppercase tracking-wider mb-1">
         Loss Rate by Region (‰/yr)
       </h4>
       <div style={{ height: 180 }}>
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 20 }}>
-            <PolarGrid stroke="rgba(255,255,255,0.08)" />
+            <PolarGrid stroke="rgba(53,183,121,0.15)" />
             <PolarAngleAxis
               dataKey="region"
-              tick={{ fill: '#777', fontSize: 11 }}
+              tick={{ fill: '#374151', fontSize: 11 }}
             />
             <Radar
               name="Loss Rate"
               dataKey="lossRate"
-              stroke="#00dc82"
-              fill="#00dc82"
+              stroke="#35b779"
+              fill="#35b779"
               fillOpacity={0.15}
               strokeWidth={1.5}
             />
             <Tooltip
               contentStyle={{
-                background: 'rgba(10,14,20,0.95)',
-                border: '1px solid rgba(255,255,255,0.1)',
+                background: 'rgba(250,248,243,0.95)',
+                border: '1px solid rgba(53,183,121,0.2)',
                 borderRadius: 8,
                 fontSize: 11,
-                color: '#e0e0e0',
+                color: '#111827',
               }}
               formatter={(v) => [`${Number(v)}‰/yr`, 'Loss Rate']}
             />

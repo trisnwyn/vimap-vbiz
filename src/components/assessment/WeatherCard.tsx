@@ -13,13 +13,13 @@ const MONTHS = ['J','F','M','A','M','J','J','A','S','O','N','D'];
 
 export default function WeatherCard({ weather, source, bare = false }: Props) {
   if (!weather) {
-    if (bare) return <p className="text-[11px] text-gray-500">Weather data unavailable.</p>;
+    if (bare) return <p className="text-[11px] text-[#6b7280]">Weather data unavailable.</p>;
     return (
-      <div className="rounded-xl p-3 border border-white/[0.06] bg-white/[0.02]">
-        <div className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">
+      <div className="rounded-xl p-3 border border-[#35b779]/[0.15] bg-white/60 shadow-sm">
+        <div className="text-xs text-[#1f2937] font-semibold uppercase tracking-wider mb-1">
           Climate
         </div>
-        <p className="text-[11px] text-gray-500">Weather data unavailable.</p>
+        <p className="text-[11px] text-[#6b7280]">Weather data unavailable.</p>
       </div>
     );
   }
@@ -57,8 +57,8 @@ export default function WeatherCard({ weather, source, bare = false }: Props) {
 
       <div>
         <div className="flex items-baseline justify-between mb-1">
-          <span className="text-[10px] text-gray-500 uppercase tracking-wider">Monthly Rainfall</span>
-          <span className="text-[10px] text-gray-600 font-mono">mm</span>
+          <span className="text-[10px] text-[#6b7280] uppercase tracking-wider">Monthly Rainfall</span>
+          <span className="text-[10px] text-[#9ca3af] font-mono">mm</span>
         </div>
         <div className="flex items-end gap-0.5 h-[64px]" aria-label="Monthly rainfall bar chart">
           {weather.monthlyRainfall.map((mm, i) => {
@@ -72,7 +72,7 @@ export default function WeatherCard({ weather, source, bare = false }: Props) {
                     style={{ height: `${pct}%`, transition: 'height 0.5s ease-out' }}
                   />
                 </div>
-                <span className="text-[10px] text-gray-500 font-mono leading-none">{MONTHS[i]}</span>
+                <span className="text-[10px] text-[#6b7280] font-mono leading-none">{MONTHS[i]}</span>
               </div>
             );
           })}
@@ -84,12 +84,12 @@ export default function WeatherCard({ weather, source, bare = false }: Props) {
   if (bare) return body;
 
   return (
-    <div className="rounded-xl p-3 border border-white/[0.06] bg-white/[0.02] animate-fade-in">
+    <div className="rounded-xl p-3 border border-[#35b779]/[0.15] bg-white/60 shadow-sm animate-fade-in">
       <div className="flex items-baseline justify-between mb-2">
-        <h4 className="text-xs text-gray-300 font-semibold uppercase tracking-wider">
+        <h4 className="text-xs text-[#1f2937] font-semibold uppercase tracking-wider">
           Climate
         </h4>
-        {source && <span className="text-[10px] text-gray-600 truncate">{source}</span>}
+        {source && <span className="text-[10px] text-[#9ca3af] truncate">{source}</span>}
       </div>
       {body}
     </div>
@@ -98,13 +98,13 @@ export default function WeatherCard({ weather, source, bare = false }: Props) {
 
 function Stat({ icon, label, value, sub }: { icon: React.ReactNode; label: string; value: string; sub?: string }) {
   return (
-    <div className="rounded-md bg-white/[0.03] border border-white/[0.04] px-2 py-1.5">
+    <div className="rounded-md bg-[#35b779]/[0.05] border border-[#35b779]/[0.10] px-2 py-1.5">
       <div className="flex items-center gap-1 mb-0.5">
         {icon}
-        <span className="text-[10px] text-gray-500 uppercase tracking-wider truncate">{label}</span>
+        <span className="text-[10px] text-[#6b7280] uppercase tracking-wider truncate">{label}</span>
       </div>
-      <div className="text-sm font-bold text-white font-mono leading-tight">{value}</div>
-      {sub && <div className="text-[10px] text-gray-500 leading-tight">{sub}</div>}
+      <div className="text-sm font-bold text-[#111827] font-mono leading-tight">{value}</div>
+      {sub && <div className="text-[10px] text-[#6b7280] leading-tight">{sub}</div>}
     </div>
   );
 }

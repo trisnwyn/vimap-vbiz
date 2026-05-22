@@ -58,7 +58,7 @@ export default function TimeSlider({ value, onChange, min = 2001, max = 2024 }: 
         <div className="flex items-center gap-1">
           <button
             onClick={() => { stop(); onChange(min); }}
-            className="p-1.5 rounded-md text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+            className="p-1.5 rounded-md text-[#374151] hover:text-[#111827] glass-btn transition-all"
             title="Reset to start"
             tabIndex={0}
           >
@@ -66,7 +66,7 @@ export default function TimeSlider({ value, onChange, min = 2001, max = 2024 }: 
           </button>
           <button
             onClick={togglePlay}
-            className="p-2 rounded-lg bg-accent/15 text-accent hover:bg-accent/25 transition-all"
+            className="p-2 rounded-lg glass-btn !bg-accent/15 !border-accent/25 text-accent hover:!bg-accent/25 transition-all"
             title={playing ? 'Pause' : 'Play timeline'}
             tabIndex={0}
             aria-label={playing ? 'Pause timeline' : 'Play timeline'}
@@ -75,7 +75,7 @@ export default function TimeSlider({ value, onChange, min = 2001, max = 2024 }: 
           </button>
           <button
             onClick={() => { stop(); onChange(max); }}
-            className="p-1.5 rounded-md text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+            className="p-1.5 rounded-md text-[#374151] hover:text-[#111827] glass-btn transition-all"
             title="Skip to end"
             tabIndex={0}
           >
@@ -98,7 +98,7 @@ export default function TimeSlider({ value, onChange, min = 2001, max = 2024 }: 
                 key={y}
                 onClick={() => { stop(); onChange(y); }}
                 className={`text-[11px] font-mono transition-colors ${
-                  y === value ? 'text-accent font-bold' : 'text-gray-600 hover:text-gray-400'
+                  y === value ? 'text-accent font-bold' : 'text-[#9ca3af] hover:text-[#374151]'
                 }`}
               >
                 {y}
@@ -108,8 +108,8 @@ export default function TimeSlider({ value, onChange, min = 2001, max = 2024 }: 
         </div>
 
         <div className="text-right min-w-[80px]">
-          <div className="text-2xl font-mono font-bold text-white leading-none">{value}</div>
-          <div className="text-[11px] text-gray-500 mt-0.5">
+          <div className="text-2xl font-mono font-bold text-[#111827] leading-none">{value}</div>
+          <div className="text-[11px] text-[#6b7280] mt-0.5">
             {value <= 2020 ? 'Pre-EUDR cutoff' : 'Post-EUDR cutoff'}
           </div>
         </div>
