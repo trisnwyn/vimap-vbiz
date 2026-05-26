@@ -60,6 +60,7 @@ export default function TimeSlider({ value, onChange, min = 2001, max = 2024 }: 
             onClick={() => { stop(); onChange(min); }}
             className="p-1.5 rounded-md text-[#374151] hover:text-[#111827] glass-btn transition-all"
             title="Reset to start"
+            aria-label="Reset to start year"
             tabIndex={0}
           >
             <SkipBack className="w-3.5 h-3.5" />
@@ -77,6 +78,7 @@ export default function TimeSlider({ value, onChange, min = 2001, max = 2024 }: 
             onClick={() => { stop(); onChange(max); }}
             className="p-1.5 rounded-md text-[#374151] hover:text-[#111827] glass-btn transition-all"
             title="Skip to end"
+            aria-label="Skip to end year"
             tabIndex={0}
           >
             <SkipForward className="w-3.5 h-3.5" />
@@ -90,6 +92,8 @@ export default function TimeSlider({ value, onChange, min = 2001, max = 2024 }: 
             max={max}
             value={value}
             onChange={(e) => { stop(); onChange(Number(e.target.value)); }}
+            aria-label="Select year"
+            aria-valuetext={`${value} — ${value <= 2020 ? 'pre-EUDR cutoff' : 'post-EUDR cutoff'}`}
             className="w-full"
           />
           <div className="flex justify-between px-1">

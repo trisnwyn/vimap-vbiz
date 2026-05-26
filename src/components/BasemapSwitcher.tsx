@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Map, Satellite, Mountain } from 'lucide-react';
 
 export type BasemapStyle = 'dark' | 'satellite' | 'voyager';
@@ -51,11 +51,29 @@ export function getSatelliteStyle(): object {
 
 export default function BasemapSwitcher({ value, onChange }: BasemapSwitcherProps) {
   const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    const onClick = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('mousedown', onClick);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('mousedown', onClick);
+    };
+  }, [open]);
 
   return (
-    <div className="absolute top-16 right-3 z-20">
+    <div ref={containerRef} className="absolute top-16 right-3 z-20">
       <button
         onClick={() => setOpen((o) => !o)}
+        aria-label="Change basemap"
+        aria-haspopup="true"
+        aria-expanded={open}
         className="w-8 h-8 rounded-lg glass-panel flex items-center justify-center text-[#374151] hover:text-[#111827] transition-colors border border-[#35b779]/[0.20]"
         title="Change basemap"
       >
@@ -63,10 +81,12 @@ export default function BasemapSwitcher({ value, onChange }: BasemapSwitcherProp
       </button>
 
       {open && (
-        <div role="menu" className="absolute top-10 right-0 glass-panel rounded-lg border border-[#35b779]/[0.20] p-1.5 animate-fade-in min-w-[120px]">
+        <div role="menu" aria-label="Map style options" className="absolute top-10 right-0 glass-panel rounded-lg border border-[#35b779]/[0.20] p-1.5 animate-fade-in min-w-[120px]">
           {STYLES.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
+              role="menuitem"
+              aria-current={value === id ? 'true' : undefined}
               onClick={() => {
                 onChange(id);
                 setOpen(false);

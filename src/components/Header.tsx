@@ -1,6 +1,7 @@
 'use client';
 
-import { TreePine, Newspaper, BarChart3, Target, Layers, Eye, EyeOff, Sparkles, Route, Map as MapIcon, LayoutDashboard } from 'lucide-react';
+import { TreePine, Newspaper, BarChart3, Target, Layers, Eye, EyeOff, Sparkles, Route, Map as MapIcon, LayoutDashboard, DollarSign } from 'lucide-react';
+import Link from 'next/link';
 import SearchBar from './SearchBar';
 import ExportReport from './ExportReport';
 
@@ -143,6 +144,14 @@ export default function Header({
           <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
           <span className="text-xs font-mono text-[#111827] font-bold">{year}</span>
         </div>
+
+        <Link
+          href="/pricing"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium glass-btn text-[#374151] hover:text-[#111827] hover:bg-[#35b779]/8 transition-all"
+        >
+          <DollarSign className="w-3.5 h-3.5 text-accent" />
+          Pricing
+        </Link>
       </div>
     </header>
   );

@@ -2,10 +2,32 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // Vietnam bounding box: west,south,east,north
 const VN_BBOX = '102.14,8.18,109.46,23.39';
-const FIRMS_BASE = 'https://firms.modaps.eosdis.nasa.gov/api/area/json';
+// Use CSV endpoint — the JSON endpoint returns 400 on FIRMS's side
+const FIRMS_BASE = 'https://firms.modaps.eosdis.nasa.gov/api/area/csv';
 
 let cache: { data: object; timestamp: number } | null = null;
 const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
+
+/** Parse FIRMS CSV response into structured hotspot objects */
+function parseFirmsCsv(csv: string) {
+  const lines = csv.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim());
+
+  return lines.slice(1).map(line => {
+    const vals = line.split(',');
+    const row: Record<string, string> = {};
+    headers.forEach((h, i) => { row[h] = (vals[i] ?? '').trim(); });
+    return {
+      lat: parseFloat(row['latitude'] ?? row['lat'] ?? '0'),
+      lng: parseFloat(row['longitude'] ?? row['lon'] ?? '0'),
+      brightness: parseFloat(row['bright_ti4'] ?? row['brightness'] ?? '0'),
+      date: row['acq_date'] ?? '',
+      confidence: row['confidence'] ?? '',
+      frp: parseFloat(row['frp'] ?? '0'),
+    };
+  }).filter(h => h.lat !== 0 && h.lng !== 0);
+}
 
 export async function GET(req: NextRequest) {
   const mapKey = process.env.FIRMS_MAP_KEY;
@@ -47,23 +69,16 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const hotspots = await response.json();
+    const csv = await response.text();
+    const hotspots = parseFirmsCsv(csv);
 
     const result = {
       source: 'NASA FIRMS',
       satellite: source,
       bbox: VN_BBOX,
       days: dayCount,
-      count: Array.isArray(hotspots) ? hotspots.length : 0,
-      hotspots: Array.isArray(hotspots)
-        ? hotspots.map((h: { latitude: number; longitude: number; brightness: number; acq_date: string; confidence: string }) => ({
-            lat: h.latitude,
-            lng: h.longitude,
-            brightness: h.brightness,
-            date: h.acq_date,
-            confidence: h.confidence,
-          }))
-        : [],
+      count: hotspots.length,
+      hotspots,
     };
 
     cache = { data: result, timestamp: Date.now() };

@@ -69,11 +69,15 @@ function inferSoilName(textureClass: string, ph: number, soc: number): { type: s
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const lat = parseFloat(searchParams.get('lat') || '');
-  const lng = parseFloat(searchParams.get('lng') || '');
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+  const latRaw = parseFloat(searchParams.get('lat') || '');
+  const lngRaw = parseFloat(searchParams.get('lng') || '');
+  if (!Number.isFinite(latRaw) || !Number.isFinite(lngRaw)) {
     return NextResponse.json({ error: 'lat/lng required' }, { status: 400 });
   }
+
+  // Clamp to Vietnam bounds (8°N–24°N, 100°E–110°E) for sanity
+  const lat = Math.max(8, Math.min(24, latRaw));
+  const lng = Math.max(100, Math.min(110, lngRaw));
 
   const params = new URLSearchParams();
   params.set('lon', String(lng));

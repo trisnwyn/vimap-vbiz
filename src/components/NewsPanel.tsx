@@ -110,13 +110,14 @@ export default function NewsPanel({ year, selectedNewsId, onNewsSelect }: NewsPa
                     className="flex items-center gap-1 text-xs text-accent hover:underline"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    Search source <ExternalLink className="w-2.5 h-2.5" />
+                    {article.url ? 'Read article' : 'Search source'} <ExternalLink className="w-2.5 h-2.5" />
                   </a>
                 </div>
               </div>
             )}
           </div>
         ))}
+
       </div>
     </div>
   );

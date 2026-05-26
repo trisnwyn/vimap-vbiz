@@ -1,24 +1,57 @@
 'use client';
 
-interface DataSourceBadgeProps {
-  source?: 'gfw_hansen' | 'world_bank' | 'nasa_firms' | 'modeled' | string;
+import { Database, AlertTriangle, CheckCircle2 } from 'lucide-react';
+
+type BadgeVariant = 'live' | 'modeled' | 'fallback';
+
+interface Props {
+  source: string;
+  variant?: BadgeVariant;
   className?: string;
 }
 
-const sourceLabels: Record<string, { label: string; color: string; dotColor: string }> = {
-  gfw_hansen: { label: 'Hansen/GFW', color: 'text-green-400', dotColor: 'bg-green-400' },
-  world_bank: { label: 'World Bank', color: 'text-blue-400', dotColor: 'bg-blue-400' },
-  nasa_firms: { label: 'NASA FIRMS', color: 'text-orange-400', dotColor: 'bg-orange-400' },
-  modeled: { label: 'Modeled', color: 'text-[#6b7280]', dotColor: 'bg-[#9ca3af]' },
+const VARIANT_META: Record<BadgeVariant, {
+  icon: React.FC<{ className?: string }>;
+  bg: string;
+  text: string;
+  border: string;
+}> = {
+  live: {
+    icon: CheckCircle2,
+    bg: 'bg-emerald-500/[0.08]',
+    text: 'text-emerald-600',
+    border: 'border-emerald-500/20',
+  },
+  modeled: {
+    icon: Database,
+    bg: 'bg-[#35b779]/[0.07]',
+    text: 'text-[#374151]',
+    border: 'border-[#35b779]/[0.18]',
+  },
+  fallback: {
+    icon: AlertTriangle,
+    bg: 'bg-yellow-500/[0.07]',
+    text: 'text-yellow-600',
+    border: 'border-yellow-500/20',
+  },
 };
 
-export default function DataSourceBadge({ source = 'modeled', className = '' }: DataSourceBadgeProps) {
-  const config = sourceLabels[source] ?? sourceLabels.modeled;
+/**
+ * Small inline badge showing where a data point originates.
+ * Use variant="live" for real API data, "modeled" for synthetic/estimated,
+ * "fallback" when a live source was attempted but unavailable.
+ */
+export default function DataSourceBadge({ source, variant = 'modeled', className = '' }: Props) {
+  const meta = VARIANT_META[variant];
+  const Icon = meta.icon;
 
   return (
-    <span className={`inline-flex items-center gap-1 text-[11px] ${config.color} ${className}`}>
-      <span className={`w-1 h-1 rounded-full ${config.dotColor}`} />
-      {config.label}
+    <span
+      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-medium ${meta.bg} ${meta.text} ${meta.border} ${className}`}
+      title={`Data source: ${source}`}
+    >
+      <Icon className="w-2.5 h-2.5 shrink-0" />
+      {source}
     </span>
   );
 }

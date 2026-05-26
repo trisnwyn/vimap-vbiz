@@ -1,6 +1,61 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { provinces } from '@/data/provinces';
 import { interpolateYear } from '@/data/utils';
+import { rateLimit, getClientIp } from '@/lib/rate-limit';
+
+interface FallbackParams {
+  totalForest: number;
+  totalLoss: number;
+  avgRate: number;
+  topRisk: Array<{ name: string; region: string; crop: string; lossRate: string; coverChange: string; annualLoss: number }>;
+  year: number;
+  provinceId: string | null;
+}
+
+function buildFallbackInsights({ totalForest, totalLoss, avgRate, topRisk, year, provinceId }: FallbackParams) {
+  const forestMha = (totalForest / 1_000_000).toFixed(2);
+  const lossKha = (totalLoss / 1_000).toFixed(1);
+  const rateStr = (avgRate * 100).toFixed(2);
+  const worst = topRisk[0];
+  const postEudr = year > 2020;
+
+  return [
+    {
+      type: 'trend',
+      severity: avgRate > 0.005 ? 'warning' : 'info',
+      title: `${year} Forest Cover Snapshot`,
+      body: `Vietnam's ${provinceId ? `${topRisk[0]?.region ?? 'selected'} region` : '63-province'} forest cover stands at ${forestMha}M ha in ${year}, with an annual loss of ${lossKha}K ha — an average rate of ${rateStr}% per year. ${avgRate > 0.005 ? 'This exceeds sustainable thresholds.' : 'The rate is within manageable bounds.'}`,
+    },
+    {
+      type: 'risk',
+      severity: worst ? 'critical' : 'warning',
+      title: 'Highest-Risk Province',
+      body: worst
+        ? `${worst.name} (${worst.region}) leads deforestation risk with a loss rate of ${worst.lossRate} and a total annual loss of ${worst.annualLoss.toLocaleString()} ha, driven primarily by ${worst.crop} cultivation. Forest cover has changed ${worst.coverChange} since 2000.`
+        : 'Insufficient data to identify highest-risk province.',
+    },
+    {
+      type: postEudr ? 'risk' : 'info',
+      severity: postEudr ? 'critical' : 'info',
+      title: postEudr ? 'EUDR Post-Cutoff Exposure' : 'Pre-EUDR Baseline Period',
+      body: postEudr
+        ? `Any deforestation recorded after 31 December 2020 in coffee, rubber, or timber areas triggers EU Regulation 2023/1115 due-diligence obligations. The ${lossKha}K ha lost in ${year} must be geographically audited before EU market access is granted to downstream operators.`
+        : `This data predates the EUDR cutoff (31 December 2020). Forest cover in ${year} establishes the historical baseline used to evaluate post-2020 land-use change for EU trade compliance.`,
+    },
+    {
+      type: 'forecast',
+      severity: 'warning',
+      title: 'Disaster Risk Correlation',
+      body: `Provinces with the highest deforestation rates — ${topRisk.slice(0, 3).map(p => p.name).join(', ')} — face elevated landslide and flash-flood risk. Deforested hillsides lose 40–60% of their water retention capacity, amplifying downstream flood intensity during monsoon season (May–November).`,
+    },
+    {
+      type: 'recommendation',
+      severity: 'positive',
+      title: 'Priority Action: Satellite Monitoring',
+      body: `To meet EUDR and REDD+ reporting obligations, deploy near-real-time Sentinel-2 monitoring across the ${topRisk.slice(0, 5).map(p => p.name).join(', ')} corridor. Integrate with MARD's national forestry database to auto-flag plot-level changes exceeding 0.5 ha annually.`,
+    },
+  ];
+}
 
 export async function POST(req: NextRequest) {
   let body: { year?: unknown; provinceId?: unknown };
@@ -26,15 +81,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid provinceId' }, { status: 400 });
   }
 
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) {
+  // Rate-limit: 10 AI requests per minute per IP
+  const ip = getClientIp(req);
+  const rl = rateLimit(`${ip}:analyze`, 10, 60_000);
+  if (!rl.success) {
     return NextResponse.json(
-      { error: 'GROQ_API_KEY not configured' },
-      { status: 500 },
+      { error: 'Too many requests. Please wait before running another analysis.' },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': String(Math.ceil((rl.resetAt - Date.now()) / 1000)),
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': String(rl.resetAt),
+        },
+      },
     );
   }
 
-  // Build data context for the LLM
+  // Build data context (needed for both AI path and fallback)
   const source = provinceId
     ? provinces.filter((p) => p.id === provinceId)
     : provinces;
@@ -59,6 +123,16 @@ export async function POST(req: NextRequest) {
         100
       ).toFixed(1) + '%',
     }));
+
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    // Return rule-based fallback insights when no AI key is configured
+    return NextResponse.json({
+      insights: buildFallbackInsights({ totalForest, totalLoss, avgRate, topRisk, year, provinceId }),
+      model: 'rule-based-fallback',
+      usage: null,
+    });
+  }
 
   const selectedInfo = provinceId
     ? (() => {
@@ -150,9 +224,11 @@ Return ONLY the JSON array, no markdown, no code fences.`;
     });
   } catch (err) {
     console.error('Groq request failed:', err);
-    return NextResponse.json(
-      { error: 'Failed to reach AI service' },
-      { status: 503 },
-    );
+    // Return rule-based fallback instead of hard error
+    return NextResponse.json({
+      insights: buildFallbackInsights({ totalForest, totalLoss, avgRate, topRisk, year, provinceId }),
+      model: 'rule-based-fallback',
+      usage: null,
+    });
   }
 }

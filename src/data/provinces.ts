@@ -1,6 +1,11 @@
 import type { Province } from '@/types';
 
-export const provinces: Province[] = [
+// All province statistics are modeled estimates based on published regional forest-cover
+// trends from GFW, MARD, and World Bank national aggregates. They approximate the correct
+// order of magnitude and directional trends but are NOT verified plot-level data.
+// To replace with real figures: supply GFW_API_KEY in .env.local and the /api/gfw route
+// will override these values with Hansen/UMD tree-cover-loss data per province.
+const _provinces: Omit<Province, 'dataSource'>[] = [
   // === NORTHEAST ===
   { id: 'ha_giang', name: 'Ha Giang', nameVi: 'Hà Giang', lat: 22.82, lng: 104.98, region: 'Northeast', area: 7945, primaryCrop: 'maize', forestCover: { 2000: 285000, 2005: 310000, 2010: 345000, 2015: 380000, 2020: 405000, 2024: 420000 }, forestLoss: { 2000: 3200, 2005: 2800, 2010: 2200, 2015: 1800, 2020: 1200, 2024: 900 }, lossRate: { 2000: 0.011, 2005: 0.009, 2010: 0.006, 2015: 0.005, 2020: 0.003, 2024: 0.002 } },
   { id: 'cao_bang', name: 'Cao Bang', nameVi: 'Cao Bằng', lat: 22.67, lng: 106.26, region: 'Northeast', area: 6724, primaryCrop: 'maize', forestCover: { 2000: 310000, 2005: 325000, 2010: 350000, 2015: 370000, 2020: 385000, 2024: 395000 }, forestLoss: { 2000: 2100, 2005: 1800, 2010: 1500, 2015: 1200, 2020: 800, 2024: 600 }, lossRate: { 2000: 0.007, 2005: 0.006, 2010: 0.004, 2015: 0.003, 2020: 0.002, 2024: 0.002 } },
@@ -73,6 +78,11 @@ export const provinces: Province[] = [
   { id: 'bac_lieu', name: 'Bac Lieu', nameVi: 'Bạc Liêu', lat: 9.29, lng: 105.72, region: 'Mekong Delta', area: 2584, primaryCrop: 'shrimp', forestCover: { 2000: 5500, 2005: 5800, 2010: 6150, 2015: 6500, 2020: 6800, 2024: 7000 }, forestLoss: { 2000: 200, 2005: 185, 2010: 168, 2015: 150, 2020: 110, 2024: 80 }, lossRate: { 2000: 0.036, 2005: 0.032, 2010: 0.027, 2015: 0.023, 2020: 0.016, 2024: 0.011 } },
   { id: 'ca_mau', name: 'Ca Mau', nameVi: 'Cà Mau', lat: 9.18, lng: 105.15, region: 'Mekong Delta', area: 5332, primaryCrop: 'shrimp', forestCover: { 2000: 95000, 2005: 90000, 2010: 86000, 2015: 82000, 2020: 80000, 2024: 78000 }, forestLoss: { 2000: 3200, 2005: 3000, 2010: 2800, 2015: 2500, 2020: 1800, 2024: 1200 }, lossRate: { 2000: 0.034, 2005: 0.033, 2010: 0.033, 2015: 0.030, 2020: 0.023, 2024: 0.015 } },
 ];
+
+// Stamp every entry with its data lineage so UI components can display source badges.
+export const provinces: Province[] = _provinces.map(
+  (p) => ({ ...p, dataSource: 'modeled' as const }),
+);
 
 export const regions = [
   { id: 'northeast', name: 'Northeast', color: '#4caf50' },
