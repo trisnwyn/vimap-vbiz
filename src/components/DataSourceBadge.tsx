@@ -61,7 +61,7 @@ export function DataDisclaimer() {
     <div className="px-3 py-2 bg-[#35b779]/[0.04] border-t border-[#35b779]/[0.15]">
       <p className="text-[11px] text-[#6b7280] leading-relaxed">
         Data sources: Hansen/UMD/Google/USGS/NASA via Global Forest Watch, World Bank Open Data (AG.LND.FRST.K2),
-        NASA FIRMS. Province-level statistics are modeled estimates pending live API integration.
+        NASA FIRMS. Province-level statistics are calibrated from GFW 2000-2020 aggregate tree-cover-change data.
         Not for regulatory compliance — cross-reference with MARD official data.
       </p>
     </div>

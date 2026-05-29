@@ -4,14 +4,23 @@ import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import Map, { Source, Layer, Popup, NavigationControl } from 'react-map-gl/maplibre';
 import type { MapRef, MapLayerMouseEvent } from 'react-map-gl/maplibre';
 import type maplibregl from 'maplibre-gl';
+import * as turf from '@turf/turf';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { provinces } from '@/data/provinces';
 import { interpolateYear } from '@/data/utils';
-import { forestLossPoints } from '@/data/forest-loss';
 import { newsArticles } from '@/data/news-articles';
 import { supplyRoutes, commodityColors } from '@/data/supply-chains';
 import type { BasemapStyle } from './BasemapSwitcher';
 import { BASEMAP_URLS, getSatelliteStyle } from './BasemapSwitcher';
+
+interface FireHotspot {
+  lat: number;
+  lng: number;
+  brightness: number;
+  date: string;
+  confidence: string;
+  frp: number;
+}
 
 interface MapViewProps {
   year: number;
@@ -25,6 +34,15 @@ interface MapViewProps {
   onMapClick: (lng: number, lat: number) => void;
   onProvinceSelect: (id: string | null) => void;
   onNewsSelect: (id: string | null) => void;
+}
+
+// Vietnam bounding box for fallback filtering when boundary polygons are unavailable
+const VN_BBOX = { minLng: 102.14, maxLng: 109.46, minLat: 8.18, maxLat: 23.39 };
+
+function isPolygonFeature(
+  feature: GeoJSON.Feature,
+): feature is GeoJSON.Feature<GeoJSON.Polygon | GeoJSON.MultiPolygon> {
+  return feature.geometry?.type === 'Polygon' || feature.geometry?.type === 'MultiPolygon';
 }
 
 export default function MapView({
@@ -47,18 +65,25 @@ export default function MapView({
     name?: string;
     detail?: string;
   } | null>(null);
-  const [viewBounds, setViewBounds] = useState<{
-    west: number; south: number; east: number; north: number;
-  } | null>(null);
 
   // Province boundary GeoJSON from API
   const [boundaryGeoJSON, setBoundaryGeoJSON] = useState<object | null>(null);
+  const [fireHotspots, setFireHotspots] = useState<FireHotspot[]>([]);
 
   useEffect(() => {
     fetch('/api/boundaries')
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (data?.type === 'FeatureCollection') setBoundaryGeoJSON(data);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/fire-hotspots?days=5')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (Array.isArray(data?.hotspots)) setFireHotspots(data.hotspots);
       })
       .catch(() => {});
   }, []);
@@ -86,27 +111,46 @@ export default function MapView({
     })),
   }), [year]);
 
-  const heatmapGeoJSON = useMemo(() => {
-    const BUFFER = 1.5; // degrees buffer around viewport
-    const filtered = forestLossPoints.filter((p) => {
-      if (p.year > year) return false;
-      if (!viewBounds) return true; // show all before first move
+  const vietnamBoundaryFeatures = useMemo(() => {
+    if (!boundaryGeoJSON) return [];
+    const featureCollection = boundaryGeoJSON as GeoJSON.FeatureCollection;
+    return featureCollection.features.filter(isPolygonFeature);
+  }, [boundaryGeoJSON]);
+
+  const fireHotspotGeoJSON = useMemo(() => ({
+    type: 'FeatureCollection' as const,
+    features: fireHotspots.filter((p) => {
+      // If boundary polygons loaded, clip precisely to Vietnam territory
+      if (vietnamBoundaryFeatures.length > 0) {
+        return vietnamBoundaryFeatures.some((feature) => (
+          turf.booleanPointInPolygon(turf.point([p.lng, p.lat]), feature)
+        ));
+      }
+      // Fallback: use Vietnam bounding box so the heatmap is never blank
       return (
-        p.lng >= viewBounds.west - BUFFER &&
-        p.lng <= viewBounds.east + BUFFER &&
-        p.lat >= viewBounds.south - BUFFER &&
-        p.lat <= viewBounds.north + BUFFER
+        p.lng >= VN_BBOX.minLng && p.lng <= VN_BBOX.maxLng &&
+        p.lat >= VN_BBOX.minLat && p.lat <= VN_BBOX.maxLat
       );
-    });
-    return {
-      type: 'FeatureCollection' as const,
-      features: filtered.map((p) => ({
+    }).map((p) => {
+      const confidence = p.confidence.toLowerCase();
+      const confidenceWeight =
+        confidence === 'h' || confidence === 'high' ? 1 :
+        confidence === 'n' || confidence === 'nominal' ? 0.75 :
+        confidence === 'l' || confidence === 'low' ? 0.5 :
+        Math.min(1, Math.max(0.35, Number(p.confidence) / 100 || 0.65));
+      const frpWeight = Math.min(1, Math.max(0.25, p.frp / 35));
+      return {
         type: 'Feature' as const,
         geometry: { type: 'Point' as const, coordinates: [p.lng, p.lat] },
-        properties: { intensity: p.intensity, year: p.year },
-      })),
-    };
-  }, [year, viewBounds]);
+        properties: {
+          intensity: Math.max(0.2, confidenceWeight * frpWeight),
+          date: p.date,
+          frp: p.frp,
+          confidence: p.confidence,
+        },
+      };
+    }),
+  }), [fireHotspots, vietnamBoundaryFeatures]);
 
   const newsGeoJSON = useMemo(() => ({
     type: 'FeatureCollection' as const,
@@ -248,18 +292,6 @@ export default function MapView({
     [drawingMode],
   );
 
-  const handleMoveEnd = useCallback(() => {
-    const map = mapRef.current?.getMap();
-    if (!map) return;
-    const b = map.getBounds();
-    setViewBounds({
-      west: b.getWest(),
-      south: b.getSouth(),
-      east: b.getEast(),
-      north: b.getNorth(),
-    });
-  }, []);
-
   return (
     <Map
       ref={mapRef}
@@ -268,8 +300,6 @@ export default function MapView({
       mapStyle={mapStyle}
       onClick={handleClick}
       onMouseMove={handleMouseMove}
-      onMoveEnd={handleMoveEnd}
-      onLoad={handleMoveEnd}
       maxBounds={[
         [98, 5],
         [115, 26],
@@ -331,9 +361,9 @@ export default function MapView({
       )}
 
       {showHeatmap && (
-        <Source id="heatmap" type="geojson" data={heatmapGeoJSON}>
+        <Source id="heatmap" type="geojson" data={fireHotspotGeoJSON}>
           <Layer
-            id="forest-loss-heat"
+            id="fire-hotspot-heat"
             type="heatmap"
             paint={{
               'heatmap-weight': ['get', 'intensity'],

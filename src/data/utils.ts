@@ -18,11 +18,15 @@ export function interpolateYear(data: Record<number, number>, year: number): num
   if (year <= years[0]) return data[years[0]];
   if (year >= years[years.length - 1]) return data[years[years.length - 1]];
 
+  // Find the two bracketing years: lo <= year < hi
   let lo = years[0];
   let hi = years[years.length - 1];
-  for (const y of years) {
-    if (y <= year) lo = y;
-    if (y >= year && y < hi) hi = y;
+  for (let i = 0; i < years.length - 1; i++) {
+    if (years[i] <= year && years[i + 1] >= year) {
+      lo = years[i];
+      hi = years[i + 1];
+      break;
+    }
   }
 
   if (lo === hi) return data[lo];

@@ -6,7 +6,7 @@ export const metadata = { title: 'Pricing — VinMap Biz' };
 
 const COMPARISON: { label: string; free: boolean | string; analyst: boolean | string; pro: boolean | string }[] = [
   { label: 'Province map & charts',  free: true,    analyst: true,        pro: true        },
-  { label: 'Forest loss heatmap',    free: true,    analyst: true,        pro: true        },
+  { label: 'VIIRS fire heatmap',     free: true,    analyst: true,        pro: true        },
   { label: 'Time slider 2000–2024',  free: true,    analyst: true,        pro: true        },
   { label: 'News feed',              free: '5',     analyst: 'All',       pro: 'All'       },
   { label: 'Parcel assessment',      free: false,   analyst: true,        pro: true        },

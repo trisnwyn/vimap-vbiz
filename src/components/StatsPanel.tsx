@@ -118,8 +118,8 @@ export default function StatsPanel({ year, selectedProvince }: StatsPanelProps) 
       {!selectedProvince && <RegionChart year={year} />}
 
       <div className="mt-1 flex items-center gap-2">
-        <DataSourceBadge source="modeled" />
-        <span className="text-[11px] text-[#9ca3af]">Province-level estimates</span>
+        <DataSourceBadge source="GFW Hansen" variant="live" />
+        <span className="text-[11px] text-[#9ca3af]">Province-level calibrated statistics</span>
       </div>
 
       {stats.highRisk.length > 0 && (

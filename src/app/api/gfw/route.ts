@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const GFW_BASE = 'https://data-api.globalforestwatch.org';
 const DATASET = 'umd_adm1_net_tree_cover_change_from_height';
 
-let cache: { data: object; timestamp: number } | null = null;
+const cache = new Map<string, { data: object; timestamp: number }>();
 const CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 1 week
 
 export async function GET(req: NextRequest) {
@@ -21,13 +21,23 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  if (cache && Date.now() - cache.timestamp < CACHE_TTL) {
-    return NextResponse.json(cache.data, {
+  const iso = (req.nextUrl.searchParams.get('iso') || 'VNM').toUpperCase();
+
+  // Validate ISO code: must be exactly 3 uppercase letters (prevents SQL injection)
+  if (!/^[A-Z]{3}$/.test(iso)) {
+    return NextResponse.json(
+      { error: 'Invalid ISO country code. Must be a 3-letter ISO 3166-1 alpha-3 code.' },
+      { status: 400 },
+    );
+  }
+
+  const cached = cache.get(iso);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return NextResponse.json(cached.data, {
       headers: { 'Cache-Control': 'public, max-age=604800' },
     });
   }
 
-  const iso = (req.nextUrl.searchParams.get('iso') || 'VNM').toUpperCase();
   const sql = `SELECT gid_0, name_1, loss, gain, net, extent_00 FROM data WHERE gid_0 = '${iso}' ORDER BY loss DESC`;
 
   try {
@@ -72,7 +82,7 @@ export async function GET(req: NextRequest) {
       provinces,
     };
 
-    cache = { data: result, timestamp: Date.now() };
+    cache.set(iso, { data: result, timestamp: Date.now() });
 
     return NextResponse.json(result, {
       headers: { 'Cache-Control': 'public, max-age=604800' },

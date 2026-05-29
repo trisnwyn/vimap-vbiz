@@ -90,7 +90,7 @@ export default function Header({
         <div className="hidden lg:flex items-center gap-1">
           {([
             { key: 'provinces', label: 'Provinces', active: showProvinces, toggle: onToggleProvinces, icon: Layers },
-            { key: 'heatmap', label: 'Forest Loss', active: showHeatmap, toggle: onToggleHeatmap, icon: showHeatmap ? Eye : EyeOff },
+            { key: 'heatmap', label: 'Fire Hotspots', active: showHeatmap, toggle: onToggleHeatmap, icon: showHeatmap ? Eye : EyeOff },
             { key: 'news', label: 'News', active: showNews, toggle: onToggleNews, icon: Newspaper },
             { key: 'flows', label: 'Flows', active: showFlows, toggle: onToggleFlows, icon: Route },
           ]).map(({ key, label, active, toggle, icon: Icon }) => (
