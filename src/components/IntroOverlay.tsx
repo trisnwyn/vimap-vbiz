@@ -10,12 +10,12 @@ interface IntroOverlayProps {
 const HEADLINE_STATS = [
   { value: '14.8M', label: 'hectares of forest', sub: 'monitored across 63 provinces' },
   { value: '€2.3B', label: 'at-risk EU trade', sub: 'coffee · rubber · timber' },
-  { value: 'Dec 2026', label: 'EUDR enforcement', sub: 'plot-level proof required' },
+  { value: '30 Dec 2026', label: 'EUDR enforcement', sub: 'plot-level proof required' },
   { value: '7', label: 'high-risk provinces', sub: 'loss rate > 1.5% annually' },
 ];
 
 const FEATURES = [
-  { icon: BarChart3, color: 'text-green-400', title: 'Land Cover Intelligence', desc: 'Track forest loss across 63 provinces from 2001 to 2024 at provincial resolution.' },
+  { icon: BarChart3, color: 'text-green-400', title: 'Land Cover Intelligence', desc: 'Track forest loss across 63 provinces from 2000 to 2024 at provincial resolution.' },
   { icon: Newspaper, color: 'text-blue-400', title: 'News Intel Layer', desc: '25 curated articles geo-tagged to affected regions — click any marker to read.' },
   { icon: Shield, color: 'text-red-400', title: 'EUDR Plot Checker', desc: 'Draw any polygon on the map and get an instant deforestation compliance assessment.' },
 ];
@@ -46,7 +46,8 @@ export default function IntroOverlay({ onDismiss }: IntroOverlayProps) {
       <div className="relative w-full max-w-2xl mx-4 animate-fade-in">
         <button
           onClick={handleDismiss}
-          className="absolute -top-10 right-0 text-[#6b7280] hover:text-[#111827] transition-colors p-1"
+          className="absolute -top-10 right-0 text-[#6b7280] hover:text-[#111827] transition-colors p-2 inline-flex items-center justify-center"
+          aria-label="Close intro"
         >
           <X className="w-5 h-5" />
         </button>
@@ -77,7 +78,7 @@ export default function IntroOverlay({ onDismiss }: IntroOverlayProps) {
         <div className="glass-panel rounded-2xl p-4 mb-4">
           <p className="text-[#1f2937] text-sm leading-relaxed text-center">
             On <span className="text-[#111827] font-semibold">30 December 2026</span>, the EU Deforestation
-            Regulation becomes enforceable. Vietnam's{' '}
+            Regulation becomes enforceable. Vietnam&apos;s{' '}
             <span className="text-accent font-semibold">600,000 smallholder coffee farms</span> must
             prove their land was not deforested after 2020. There is no open national baseline.{' '}
             <span className="text-[#111827] font-semibold">VinMap is that baseline.</span>
@@ -85,7 +86,7 @@ export default function IntroOverlay({ onDismiss }: IntroOverlayProps) {
         </div>
 
         {/* Features */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
           {FEATURES.map(({ icon: Icon, color, title, desc }) => (
             <div key={title} className="glass-panel rounded-xl p-3 text-center">
               <Icon className={`w-5 h-5 ${color} mx-auto mb-2`} />
@@ -112,7 +113,7 @@ export default function IntroOverlay({ onDismiss }: IntroOverlayProps) {
         </button>
 
         <p className="text-center text-xs text-[#9ca3af] mt-3">
-          Data covers 2001–2024 · 63 provinces · Methodology: Hansen GFC + MARD forestry reports
+          Data covers 2000–2024 · 63 provinces · Methodology: Hansen GFC + MARD forestry reports
         </p>
       </div>
     </div>

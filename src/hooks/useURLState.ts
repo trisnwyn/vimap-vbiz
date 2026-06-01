@@ -1,17 +1,19 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
-type Tab = 'stats' | 'news' | 'assess' | 'ai';
+type Tab = 'stats' | 'news' | 'assess' | 'intelligence';
 export type ViewMode = 'map' | 'intel';
 
-const VALID_TABS: Tab[] = ['stats', 'news', 'assess', 'ai'];
+const VALID_TABS: Tab[] = ['stats', 'news', 'assess', 'intelligence'];
 const VALID_VIEWS: ViewMode[] = ['map', 'intel'];
 
-// Backwards-compat: old `?tab=eudr` URLs land on the new Assess tab.
+// Backwards-compat: old `?tab=eudr` URLs land on the new Assess tab,
+// old `?tab=ai` URLs land on the renamed Intelligence tab.
 export function parseTab(val: string | null): Tab {
   if (val === 'eudr') return 'assess';
+  if (val === 'ai') return 'intelligence';
   if (val && VALID_TABS.includes(val as Tab)) return val as Tab;
   return 'stats';
 }
@@ -19,7 +21,7 @@ export function parseTab(val: string | null): Tab {
 export function parseYear(val: string | null): number {
   if (!val) return 2024;
   const n = parseInt(val, 10);
-  if (isNaN(n) || n < 2001 || n > 2024) return 2024;
+  if (isNaN(n) || n < 2000 || n > 2024) return 2024;
   return n;
 }
 
@@ -77,23 +79,14 @@ export function useURLState(
 export function useInitialURLState() {
   const searchParams = useSearchParams();
 
-  // useSearchParams returns a stable object on mount — safe to read synchronously.
-  // We memoize the initial values via a ref so they stay constant across re-renders.
-  const initial = useRef<{
-    year: number;
-    tab: Tab;
-    province: string | null;
-    view: ViewMode;
-  } | null>(null);
+  // useState lazy initializer runs once synchronously on first render.
+  // searchParams is stable from useSearchParams() so this is safe.
+  const [initial] = useState(() => ({
+    year: parseYear(searchParams.get('year')),
+    tab: parseTab(searchParams.get('tab')),
+    province: searchParams.get('province') || null,
+    view: parseView(searchParams.get('view')),
+  }));
 
-  if (!initial.current) {
-    initial.current = {
-      year: parseYear(searchParams.get('year')),
-      tab: parseTab(searchParams.get('tab')),
-      province: searchParams.get('province') || null,
-      view: parseView(searchParams.get('view')),
-    };
-  }
-
-  return initial.current;
+  return initial;
 }

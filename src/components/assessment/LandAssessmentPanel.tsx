@@ -1,19 +1,22 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, startTransition } from 'react';
 import * as turf from '@turf/turf';
 import {
   Pencil, Trash2, Target, Info, Loader2, AlertCircle, Building2,
   Hexagon, CloudRain, FlaskConical, Wheat, Anchor, ShieldCheck,
+  TrendingUp, TreePine, Factory, Layers,
 } from 'lucide-react';
 import { provinces } from '@/data/provinces';
 import { buildAssessment, syntheticWeatherForProvince } from '@/lib/scoring';
 import type { WeatherData, SoilData } from '@/types/assessment';
+import { useBusinessProfile } from '@/hooks/useBusinessProfile';
 import InvestmentScore from './InvestmentScore';
 import SuitabilityRadar from './SuitabilityRadar';
 import WeatherCard from './WeatherCard';
 import SoilProfile from './SoilProfile';
 import CropViability from './CropViability';
+import RoleInsightCard from './RoleInsightCard';
 import EUDRSection from './EUDRSection';
 import MarketAccess from './MarketAccess';
 import CollapsibleSection from './CollapsibleSection';
@@ -68,6 +71,11 @@ export default function LandAssessmentPanel({
   const [soil, setSoil] = useState<SoilData | null>(null);
   const [weatherSource, setWeatherSource] = useState<string>('');
   const [soilSource, setSoilSource] = useState<string>('');
+  const [gladAlerts, setGladAlerts] = useState<{
+    available: boolean; alertCount: number;
+    firstAlert: string | null; lastAlert: string | null;
+    source: 'gfw_integrated_alerts' | 'local_fallback' | 'none';
+  } | null>(null);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
@@ -76,12 +84,15 @@ export default function LandAssessmentPanel({
 
   useEffect(() => {
     if (!target) {
-      setWeather(null);
-      setSoil(null);
-      setWeatherSource('');
-      setSoilSource('');
-      setFetchError(null);
-      setLoading(false);
+      startTransition(() => {
+        setWeather(null);
+        setSoil(null);
+        setWeatherSource('');
+        setSoilSource('');
+        setGladAlerts(null);
+        setFetchError(null);
+        setLoading(false);
+      });
       lastFetchedKey.current = '';
       return;
     }
@@ -89,8 +100,10 @@ export default function LandAssessmentPanel({
     lastFetchedKey.current = cacheKey;
 
     const controller = new AbortController();
-    setLoading(true);
-    setFetchError(null);
+    startTransition(() => {
+      setLoading(true);
+      setFetchError(null);
+    });
 
     const { lat, lng, provinceId } = target;
 
@@ -103,12 +116,26 @@ export default function LandAssessmentPanel({
       return fetch(url, { signal: controller.signal });
     };
 
+    // GLAD alerts — only for drawn polygons, not province selections
+    const gladPromise =
+      target.kind === 'polygon'
+        ? fetch('/api/eudr/alerts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ coordinates: target.polygonCoords }),
+            signal: controller.signal,
+          })
+            .then((r) => (r.ok ? r.json() : null))
+            .catch(() => null)
+        : Promise.resolve(null);
+
     Promise.allSettled([
       fetchWithRetry(`/api/weather?lat=${lat}&lng=${lng}`)
         .then((r) => r.ok ? r.json() : Promise.reject(new Error(`weather ${r.status}`))),
       fetchWithRetry(`/api/soil?lat=${lat}&lng=${lng}`)
         .then((r) => r.ok ? r.json() : Promise.reject(new Error(`soil ${r.status}`))),
-    ]).then(([w, s]) => {
+      gladPromise,
+    ]).then(([w, s, g]) => {
       if (controller.signal.aborted) return;
 
       let weatherData: WeatherData | null = null;
@@ -132,6 +159,12 @@ export default function LandAssessmentPanel({
         setSoilSource('');
       }
 
+      if (g.status === 'fulfilled' && g.value?.available) {
+        setGladAlerts(g.value);
+      } else {
+        setGladAlerts(null);
+      }
+
       if (w.status === 'rejected' && s.status === 'rejected') {
         setFetchError('Could not reach weather and soil services. Showing modeled fallbacks.');
       }
@@ -150,10 +183,30 @@ export default function LandAssessmentPanel({
       weather,
       soil,
       polygonCoords: target.polygonCoords,
+      gladAlerts: gladAlerts
+        ? { count: gladAlerts.alertCount, firstAlert: gladAlerts.firstAlert, lastAlert: gladAlerts.lastAlert, source: gladAlerts.source }
+        : null,
     });
-  }, [target, weather, soil]);
+  }, [target, weather, soil, gladAlerts]);
 
   const isWide = density === 'wide';
+
+  const { profile } = useBusinessProfile();
+
+  // Roles that rely on crop recommendations (agri supply chain).
+  // All others get a role-specific insight card instead.
+  const AG_ROLES = new Set(['exporter', 'importer', 'roaster', 'trader']);
+  const showCropViability = !profile || AG_ROLES.has(profile.role);
+
+  // CollapsibleSection metadata per role
+  const roleCardMeta = profile && !showCropViability
+    ? ({
+        financier:    { title: 'Investor Analysis',    subtitle: 'Risk grade · carbon · exit liquidity',   icon: <TrendingUp className="w-3.5 h-3.5 text-blue-500" />,    defaultOpen: isWide },
+        ngo:          { title: 'Conservation Analysis', subtitle: 'Forest · carbon seq. · reforestation',  icon: <TreePine   className="w-3.5 h-3.5 text-emerald-600" />,  defaultOpen: isWide },
+        manufacturer: { title: 'Site Intelligence',     subtitle: 'Logistics · labour · supply chain',     icon: <Factory    className="w-3.5 h-3.5 text-[#6b7280]" />,     defaultOpen: isWide },
+        other:        { title: 'Land Potential',        subtitle: 'Composite site assessment',             icon: <Layers     className="w-3.5 h-3.5 text-[#6b7280]" />,     defaultOpen: isWide },
+      })[profile.role as 'financier' | 'ngo' | 'manufacturer' | 'other'] ?? { title: 'Land Potential', subtitle: 'Composite site assessment', icon: <Layers className="w-3.5 h-3.5 text-[#6b7280]" />, defaultOpen: isWide }
+    : null;
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -253,14 +306,27 @@ export default function LandAssessmentPanel({
                 </div>
 
                 <div className="mt-3">
-                  <CollapsibleSection
-                    title="Crop Viability"
-                    subtitle={`Top ${assessment.cropRecommendations.length} fits`}
-                    icon={<Wheat className="w-3.5 h-3.5 text-amber-500" />}
-                    defaultOpen={isWide}
-                  >
-                    <CropViability crops={assessment.cropRecommendations} bare />
-                  </CollapsibleSection>
+                  {showCropViability ? (
+                    <CollapsibleSection
+                      title="Crop Viability"
+                      subtitle={`Top ${assessment.cropRecommendations.length} fits`}
+                      icon={<Wheat className="w-3.5 h-3.5 text-amber-500" />}
+                      defaultOpen={isWide}
+                    >
+                      <CropViability crops={assessment.cropRecommendations} bare />
+                    </CollapsibleSection>
+                  ) : (
+                    roleCardMeta && profile && (
+                      <CollapsibleSection
+                        title={roleCardMeta.title}
+                        subtitle={roleCardMeta.subtitle}
+                        icon={roleCardMeta.icon}
+                        defaultOpen={roleCardMeta.defaultOpen}
+                      >
+                        <RoleInsightCard assessment={assessment} profile={profile} />
+                      </CollapsibleSection>
+                    )
+                  )}
                 </div>
 
                 <div className={`mt-3 grid gap-3 ${isWide ? 'lg:grid-cols-2' : 'grid-cols-1'}`}>

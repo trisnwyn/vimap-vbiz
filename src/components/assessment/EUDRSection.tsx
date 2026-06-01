@@ -61,11 +61,34 @@ export default function EUDRSection({ eudr, bare = false }: Props) {
       </div>
 
       <div className="grid grid-cols-2 gap-1.5 mb-2">
-        <div className="rounded-md bg-[#35b779]/[0.05] border border-[#35b779]/[0.10] px-2 py-1.5">
-          <div className="text-[10px] text-[#6b7280] uppercase tracking-wider">Nearby Loss</div>
-          <div className="text-sm font-bold text-orange-500 font-mono">{eudr.nearbyLossPoints}</div>
-          <div className="text-[10px] text-[#6b7280]">events within 30 km</div>
-        </div>
+        {eudr.gladAlerts ? (
+          <div className={`rounded-md px-2 py-1.5 border ${
+            eudr.gladAlerts.count > 0
+              ? 'bg-red-500/[0.06] border-red-500/20'
+              : 'bg-emerald-500/[0.05] border-emerald-500/20'
+          }`}>
+            <div className="flex items-center gap-1 mb-0.5">
+              <div className="text-[10px] text-[#6b7280] uppercase tracking-wider">GLAD Alerts</div>
+              {eudr.gladAlerts.source === 'gfw_integrated_alerts' && (
+                <span className="text-[9px] font-bold text-emerald-600 bg-emerald-500/10 px-1 rounded">GFW live</span>
+              )}
+            </div>
+            <div className={`text-sm font-bold font-mono ${eudr.gladAlerts.count > 0 ? 'text-red-500' : 'text-emerald-600'}`}>
+              {eudr.gladAlerts.count}
+            </div>
+            <div className="text-[10px] text-[#6b7280]">
+              {eudr.gladAlerts.firstAlert
+                ? `${eudr.gladAlerts.firstAlert} → ${eudr.gladAlerts.lastAlert ?? '…'}`
+                : 'post-2020 detections'}
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-md bg-[#35b779]/[0.05] border border-[#35b779]/[0.10] px-2 py-1.5">
+            <div className="text-[10px] text-[#6b7280] uppercase tracking-wider">Nearby Loss</div>
+            <div className="text-sm font-bold text-orange-500 font-mono">{eudr.nearbyLossPoints}</div>
+            <div className="text-[10px] text-[#6b7280]">events within 30 km</div>
+          </div>
+        )}
         <div className="rounded-md bg-[#35b779]/[0.05] border border-[#35b779]/[0.10] px-2 py-1.5">
           <div className="text-[10px] text-[#6b7280] uppercase tracking-wider">Status</div>
           <div className={`text-sm font-bold ${meta.color}`}>{eudr.status.replace('_', ' ')}</div>
@@ -85,8 +108,9 @@ export default function EUDRSection({ eudr, bare = false }: Props) {
       )}
 
       <p className="text-[10px] text-[#6b7280] leading-relaxed mt-2">
-        Modeled assessment — cross-reference with MARD forestry data and high-resolution imagery
-        before EUDR due-diligence filings.
+        {eudr.gladAlerts?.source === 'gfw_integrated_alerts'
+          ? 'Plot-level evidence from GFW Integrated Alerts (GLAD-L · GLAD-S2 · RADD). Cross-reference with MARD before due-diligence filings.'
+          : 'Modeled assessment — cross-reference with MARD forestry data and high-resolution imagery before EUDR due-diligence filings.'}
       </p>
     </>
   );

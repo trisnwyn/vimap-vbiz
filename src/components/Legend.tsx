@@ -7,7 +7,7 @@ export default function Legend() {
   const [open, setOpen] = useState(true);
 
   return (
-    <div className="absolute bottom-24 right-3 sm:right-4 glass-panel rounded-lg z-10 animate-fade-in hidden sm:block max-h-[calc(100%-140px)] overflow-y-auto w-[180px]">
+    <div className="absolute bottom-24 right-3 sm:right-4 glass-panel rounded-lg z-10 animate-fade-in block max-h-[calc(100%-140px)] overflow-y-auto w-[160px] sm:w-[180px]">
       <button
         onClick={() => setOpen((o) => !o)}
         className="w-full flex items-center justify-between px-3 py-2 hover:bg-[#35b779]/[0.06] transition-colors"
@@ -23,16 +23,16 @@ export default function Legend() {
       </h4>
       <div className="flex items-center gap-1 mb-2.5">
         <div className="flex h-2 rounded-full overflow-hidden">
-          {['#35b779', '#52b788', '#fdd835', '#ff9800', '#f44336'].map((c) => (
+          {['#00dc82', '#7bd650', '#fdd835', '#ff9800', '#f44336'].map((c) => (
             <div key={c} className="w-6 h-full" style={{ backgroundColor: c }} />
           ))}
         </div>
       </div>
       <div className="flex justify-between text-[11px] text-[#6b7280] mb-3" style={{ width: 120 }}>
         <span>0%</span>
+        <span>0.5%</span>
         <span>1%</span>
-        <span>2%</span>
-        <span>3%+</span>
+        <span>1.5%+</span>
       </div>
 
       <h4 className="text-xs text-[#374151] uppercase tracking-wider mb-1.5 font-medium">
@@ -49,6 +49,20 @@ export default function Legend() {
           </div>
         ))}
         <span className="text-[11px] text-[#6b7280] ml-1">ha</span>
+      </div>
+
+      <h4 className="text-xs text-[#374151] uppercase tracking-wider mb-1.5 font-medium">
+        Map Layers
+      </h4>
+      <div className="space-y-1 mb-3">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#f43f8e' }} />
+          <span className="text-[11px] text-[#374151]">Forest Loss (GFW, all yrs)</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#ff7800' }} />
+          <span className="text-[11px] text-[#374151]">Active Fire (last 5 days)</span>
+        </div>
       </div>
 
       <h4 className="text-xs text-[#374151] uppercase tracking-wider mb-1.5 font-medium">

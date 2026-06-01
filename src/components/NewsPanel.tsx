@@ -76,7 +76,7 @@ export default function NewsPanel({ year, selectedNewsId, onNewsSelect }: NewsPa
                   backgroundColor: categoryColors[article.category] ?? '#a67c00',
                 }}
               />
-              <h4 className="text-xs text-[#111827] font-medium leading-snug line-clamp-2">
+              <h4 className="text-[13px] text-[#111827] font-medium leading-snug line-clamp-2">
                 {article.title}
               </h4>
             </div>
@@ -95,7 +95,7 @@ export default function NewsPanel({ year, selectedNewsId, onNewsSelect }: NewsPa
 
             {article.id === selectedNewsId && (
               <div className="animate-fade-in">
-                <p className="text-[11px] text-[#1f2937] leading-relaxed mb-2">
+                <p className="text-sm text-[#1f2937] leading-relaxed mb-2">
                   {article.summary}
                 </p>
                 <div className="flex items-center justify-between">

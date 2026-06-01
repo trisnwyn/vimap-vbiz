@@ -49,7 +49,7 @@ export function ListSkeleton({ rows = 5 }: { rows?: number }) {
         >
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-[#35b779]/[0.10]" />
-            <div className="h-2.5 rounded bg-[#35b779]/[0.10]" style={{ width: 60 + Math.random() * 40 }} />
+            <div className="h-2.5 rounded bg-[#35b779]/[0.10]" style={{ width: 60 + ((i * 13 + 17) % 41) }} />
           </div>
           <div className="h-2.5 w-8 rounded bg-[#35b779]/[0.08]" />
         </div>

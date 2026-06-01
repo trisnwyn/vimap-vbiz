@@ -43,6 +43,16 @@ body {
   overflow: hidden;
 }
 
+/* ── Keyboard focus indicator (a11y) ────────────────────── */
+/* :focus-visible only — mouse clicks don't show rings, keyboard nav does */
+:where(a, button, input, select, textarea, [role="button"], [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* Map canvas keeps its own clean focus handling */
+.maplibregl-canvas:focus-visible { outline: none; }
+
 /* ── Glassmorphic panel ─────────────────────────────────── */
 .glass-panel {
   background: var(--panel);
@@ -227,3 +237,13 @@ body {
 .category-policy       { color: #3b82f6; }
 .category-climate      { color: #35b779; }
 .category-agriculture  { color: #a67c00; }
+
+/* ── Reduced motion (a11y) ─────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 
-export function useDrawingMode(setActiveTab: (tab: 'stats' | 'news' | 'assess' | 'ai') => void) {
+export function useDrawingMode(setActiveTab: (tab: 'stats' | 'news' | 'assess' | 'intelligence') => void) {
   const [drawingMode, setDrawingMode] = useState(false);
   const [drawPoints, setDrawPoints] = useState<[number, number][]>([]);
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, startTransition } from 'react';
 import { AlertTriangle, Flame, Droplets, TreePine, TrendingDown } from 'lucide-react';
 import { provinces } from '@/data/provinces';
 import { interpolateYear } from '@/data/utils';
@@ -121,7 +121,7 @@ export default function AlertTicker({ year }: AlertTickerProps) {
   const [fade, setFade] = useState(true);
 
   useEffect(() => {
-    setCurrentIndex(0);
+    startTransition(() => setCurrentIndex(0));
   }, [year]);
 
   useEffect(() => {

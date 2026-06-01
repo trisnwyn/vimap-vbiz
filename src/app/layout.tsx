@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "VinMap — Vietnam Land Use & Cover Intelligence",
   description:
-    "Interactive geospatial dashboard tracking Vietnam's forest cover, deforestation, and EUDR compliance across 63 provinces from 2001 to 2024.",
+    "Interactive geospatial dashboard tracking Vietnam's forest cover, deforestation, and EUDR compliance across 63 provinces from 2000 to 2024.",
   icons: { icon: "/favicon.svg" },
   openGraph: {
     title: "VinMap — Vietnam Land Use & Cover Intelligence",

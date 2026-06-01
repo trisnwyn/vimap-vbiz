@@ -10,9 +10,9 @@ interface TimeSliderProps {
   max?: number;
 }
 
-const YEAR_MARKERS = [2001, 2005, 2010, 2015, 2020, 2024];
+const YEAR_MARKERS = [2000, 2005, 2010, 2015, 2020, 2024];
 
-export default function TimeSlider({ value, onChange, min = 2001, max = 2024 }: TimeSliderProps) {
+export default function TimeSlider({ value, onChange, min = 2000, max = 2024 }: TimeSliderProps) {
   const [playing, setPlaying] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -25,7 +25,10 @@ export default function TimeSlider({ value, onChange, min = 2001, max = 2024 }: 
   }, []);
 
   const valueRef = useRef(value);
-  valueRef.current = value;
+  // Keep ref in sync with prop after each render (not during render).
+  useEffect(() => {
+    valueRef.current = value;
+  });
 
   useEffect(() => {
     if (playing) {
@@ -58,7 +61,7 @@ export default function TimeSlider({ value, onChange, min = 2001, max = 2024 }: 
         <div className="flex items-center gap-1">
           <button
             onClick={() => { stop(); onChange(min); }}
-            className="p-1.5 rounded-md text-[#374151] hover:text-[#111827] glass-btn transition-all"
+            className="p-2 rounded-md text-[#374151] hover:text-[#111827] glass-btn transition-all"
             title="Reset to start"
             aria-label="Reset to start year"
             tabIndex={0}
@@ -76,7 +79,7 @@ export default function TimeSlider({ value, onChange, min = 2001, max = 2024 }: 
           </button>
           <button
             onClick={() => { stop(); onChange(max); }}
-            className="p-1.5 rounded-md text-[#374151] hover:text-[#111827] glass-btn transition-all"
+            className="p-2 rounded-md text-[#374151] hover:text-[#111827] glass-btn transition-all"
             title="Skip to end"
             aria-label="Skip to end year"
             tabIndex={0}

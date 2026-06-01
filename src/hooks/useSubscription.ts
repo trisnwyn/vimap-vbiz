@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, startTransition } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { canAccess, LIMITS } from '@/lib/subscription';
 import type { Tier } from '@/types/subscription';
@@ -24,8 +24,10 @@ export function useSubscription(): SubscriptionState {
   useEffect(() => {
     if (!isLoaded) return;
     if (!user) {
-      setTier('free');
-      setLoading(false);
+      startTransition(() => {
+        setTier('free');
+        setLoading(false);
+      });
       return;
     }
     fetch('/api/user/subscription')

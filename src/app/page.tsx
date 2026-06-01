@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import Header from '@/components/Header';
 import StatsPanel from '@/components/StatsPanel';
 import NewsPanel from '@/components/NewsPanel';
-import AIAnalysisPanel from '@/components/AIAnalysisPanel';
+import IntelligenceDashboard from '@/components/intel/IntelligenceDashboard';
 import TimeSlider from '@/components/TimeSlider';
 import Legend from '@/components/Legend';
 import HeadlineStrip from '@/components/HeadlineStrip';
@@ -14,7 +14,7 @@ import ProvinceDetail from '@/components/ProvinceDetail';
 import BasemapSwitcher from '@/components/BasemapSwitcher';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { DataDisclaimer } from '@/components/DataSourceBadge';
-import { Menu } from 'lucide-react';
+import { Menu, BarChart3, Newspaper, Target, Sparkles } from 'lucide-react';
 import { useMapState } from '@/hooks/useMapState';
 import { useDrawingMode } from '@/hooks/useDrawingMode';
 import { useURLState, useInitialURLState, type ViewMode } from '@/hooks/useURLState';
@@ -42,7 +42,7 @@ const LandAssessmentPanel = dynamic(() => import('@/components/assessment/LandAs
   ),
 });
 
-type Tab = 'stats' | 'news' | 'assess' | 'ai';
+type Tab = 'stats' | 'news' | 'assess' | 'intelligence';
 
 function Dashboard() {
   // Read URL params once at mount — no race condition, state starts correct.
@@ -88,6 +88,7 @@ function Dashboard() {
   }, []);
 
   const isIntel = viewMode === 'intel';
+  const isIntelligence = activeTab === 'intelligence';
 
   // Tab content renderer reused by both layouts. `density` controls compact vs wide.
   const renderTabContent = (density: 'compact' | 'wide') => {
@@ -107,14 +108,35 @@ function Dashboard() {
             density={density}
           />
         );
-      case 'ai':
-        return (
-          <ErrorBoundary fallbackTitle="AI analysis failed">
-            <AIAnalysisPanel year={year} selectedProvince={selectedProvince} density={density} />
-          </ErrorBoundary>
-        );
     }
   };
+
+  // Mobile-only tab switcher. The header tab nav is hidden below sm, so this is
+  // the only way to change tabs on a phone. Reused by both Map and Intel views.
+  const mobileTabBar = (
+    <div className="sm:hidden flex items-center gap-1 p-2 border-b border-[#35b779]/[0.15] shrink-0 bg-[#faf8f3]/95 backdrop-blur-sm">
+      {([
+        { id: 'stats' as Tab, label: 'Stats', icon: BarChart3 },
+        { id: 'news' as Tab, label: 'News', icon: Newspaper },
+        { id: 'assess' as Tab, label: 'Assess', icon: Target },
+        { id: 'intelligence' as Tab, label: 'Midori', icon: Sparkles },
+      ]).map(({ id, label, icon: Icon }) => (
+        <button
+          key={id}
+          onClick={() => handleTabChange(id)}
+          aria-pressed={activeTab === id}
+          className={`flex-1 flex flex-col items-center justify-center gap-1 min-h-[44px] py-1.5 rounded-lg text-[11px] font-medium transition-colors ${
+            activeTab === id
+              ? 'bg-accent/15 text-accent'
+              : 'text-[#374151] hover:text-[#111827] hover:bg-[#35b779]/8'
+          }`}
+        >
+          <Icon className="w-4 h-4" />
+          {label}
+        </button>
+      ))}
+    </div>
+  );
 
   const mapView = (
     <ErrorBoundary fallbackTitle="Map failed to load">
@@ -124,6 +146,7 @@ function Dashboard() {
         showHeatmap={mapState.showHeatmap}
         showProvinces={mapState.showProvinces}
         showFlows={mapState.showFlows}
+        showLoss={mapState.showLoss}
         basemap={mapState.basemap}
         drawingMode={drawingMode}
         drawPoints={drawPoints}
@@ -148,25 +171,42 @@ function Dashboard() {
         showProvinces={mapState.showProvinces}
         showNews={mapState.showNews}
         showFlows={mapState.showFlows}
+        showLoss={mapState.showLoss}
         onToggleHeatmap={mapState.toggleHeatmap}
         onToggleProvinces={mapState.toggleProvinces}
         onToggleNews={mapState.toggleNews}
         onToggleFlows={mapState.toggleFlows}
+        onToggleLoss={mapState.toggleLoss}
         onProvinceSearch={handleProvinceSearch}
         year={year}
         selectedProvince={selectedProvince}
       />
 
-      <div className="hidden md:block">
-        <HeadlineStrip year={year} />
-      </div>
-      <AlertTicker year={year} />
+      {!isIntelligence && (
+        <>
+          <div className="hidden md:block">
+            <HeadlineStrip year={year} />
+          </div>
+          <AlertTicker year={year} />
+        </>
+      )}
 
-      {isIntel ? (
+      {isIntelligence ? (
+        /* VINMAP INTELLIGENCE — full-screen dashboard, map chrome hidden */
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="sm:hidden shrink-0">{mobileTabBar}</div>
+          <div className="flex-1 overflow-hidden">
+            <ErrorBoundary fallbackTitle="Intelligence dashboard failed">
+              <IntelligenceDashboard year={year} selectedProvince={selectedProvince} />
+            </ErrorBoundary>
+          </div>
+        </div>
+      ) : isIntel ? (
         /* INTEL VIEW — intel canvas dominant, map shrunk to right-side inset */
         <div className="flex-1 flex overflow-hidden relative">
           <main className="flex-1 flex overflow-hidden">
             <section className="flex-1 overflow-y-auto bg-background">
+              <div className="sm:hidden sticky top-0 z-10">{mobileTabBar}</div>
               {renderTabContent('wide')}
               {/* Bottom spacer so TimeSlider doesn't cover content */}
               <div className="h-16" />
@@ -212,15 +252,19 @@ function Dashboard() {
             fixed lg:relative inset-y-0 left-0 z-40 lg:z-auto
             w-[280px] shrink-0 glass-panel border-r border-[#35b779]/[0.15]
             overflow-hidden transition-transform duration-300 ease-in-out
+            flex flex-col
             ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           `}>
-            {renderTabContent('compact')}
+            {mobileTabBar}
+            <div className="flex-1 overflow-hidden">
+              {renderTabContent('compact')}
+            </div>
           </aside>
 
           <main className="flex-1 relative overflow-hidden">
             <button
               onClick={() => setSidebarOpen((o) => !o)}
-              className="absolute top-3 left-3 z-20 lg:hidden w-9 h-9 rounded-lg glass-panel flex items-center justify-center text-[#374151] hover:text-[#111827] border border-[#35b779]/[0.20] transition-colors"
+              className="absolute top-3 left-3 z-20 lg:hidden w-11 h-11 rounded-lg glass-panel flex items-center justify-center text-[#374151] hover:text-[#111827] border border-[#35b779]/[0.20] transition-colors"
               aria-label="Toggle sidebar"
             >
               <Menu className="w-4 h-4" />

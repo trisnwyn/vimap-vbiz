@@ -67,7 +67,7 @@ export interface LandAssessment {
   weather: WeatherData | null;
   soil: SoilData | null;
 
-  // EUDR compliance (reuse existing schema)
+  // EUDR compliance
   eudr: {
     status: 'compliant' | 'at_risk' | 'unknown';
     forestCover2020: number;
@@ -75,6 +75,14 @@ export interface LandAssessment {
     changePercent: number;
     riskFactors: string[];
     nearbyLossPoints: number;
+    /** Plot-level GLAD alert data — populated when user draws a polygon. */
+    gladAlerts?: {
+      count: number;
+      firstAlert: string | null;
+      lastAlert: string | null;
+      /** 'gfw_integrated_alerts' = live GFW data; 'local_fallback' = offline estimate. */
+      source: 'gfw_integrated_alerts' | 'local_fallback' | 'none';
+    };
   };
 
   // Economic
@@ -82,6 +90,7 @@ export interface LandAssessment {
   cropRecommendations: CropRecommendation[];
 
   // Location context
+  provinceId: string;
   province: string;
   region: string;
   areaHa: number;

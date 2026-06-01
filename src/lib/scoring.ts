@@ -2,6 +2,7 @@ import * as turf from '@turf/turf';
 import { provinces } from '@/data/provinces';
 import { forestLossPoints } from '@/data/forest-loss';
 import { interpolateYear } from '@/data/utils';
+import { PROVINCE_ECONOMIC, grdpScore, roadScore } from '@/data/province-economic';
 import type {
   WeatherData,
   SoilData,
@@ -136,31 +137,44 @@ export function scoreClimate(weather: WeatherData | null): number {
   return clamp01to100(score);
 }
 
-// Market access — distance to nearest port, road proximity proxy via province.
+// Market access — port distance, road quality, provincial GRDP, export activity.
 export function scoreMarketAccess(port: NearestPort, province: Province): number {
-  // Distance curve
+  // ── 1. Distance to nearest export port (50% weight) ──────────────────────
   const d = port.distanceKm;
   let distScore: number;
   if (d < 50) distScore = 100;
-  else if (d < 150) distScore = 100 - ((d - 50) / 100) * 25;     // 100..75
-  else if (d < 300) distScore = 75 - ((d - 150) / 150) * 25;     // 75..50
-  else if (d < 500) distScore = 50 - ((d - 300) / 200) * 25;     // 50..25
+  else if (d < 150) distScore = 100 - ((d - 50) / 100) * 25;   // 100..75
+  else if (d < 300) distScore = 75 - ((d - 150) / 150) * 25;   // 75..50
+  else if (d < 500) distScore = 50 - ((d - 300) / 200) * 25;   // 50..25
   else distScore = 25;
 
-  // Region bonus — delta regions & Southeast have better logistics
-  const regionBonus: Record<string, number> = {
-    'Red River Delta': 10,
-    'Southeast': 10,
-    'Mekong Delta': 8,
-    'South Central': 4,
-    'North Central': 2,
-    'Central Highlands': -5,
-    'Northwest': -10,
-    'Northeast': -5,
-  };
-  const bonus = regionBonus[province.region] ?? 0;
+  // ── 2. Province-level economic indicators ─────────────────────────────────
+  const econ = PROVINCE_ECONOMIC[province.id];
+  if (!econ) {
+    // Fallback to region-only bonus when economic data is missing
+    const regionBonus: Record<string, number> = {
+      'Red River Delta': 10, 'Southeast': 10, 'Mekong Delta': 8,
+      'South Central': 4, 'North Central': 2,
+      'Central Highlands': -5, 'Northwest': -10, 'Northeast': -5,
+    };
+    return clamp01to100(distScore + (regionBonus[province.region] ?? 0));
+  }
 
-  return clamp01to100(distScore + bonus);
+  // Road quality: 1–5 → 0–100 (25% weight)
+  const rScore = roadScore(econ.roadQuality);
+
+  // GRDP: log-normalised 0–100 (15% weight) — measures economic depth / supply chain
+  const gScore = grdpScore(econ.grdp);
+
+  // Export activity: 0–1 → 0–100 (10% weight)
+  const eScore = econ.exportIndex * 100;
+
+  return clamp01to100(
+    distScore * 0.50 +
+    rScore   * 0.25 +
+    gScore   * 0.15 +
+    eScore   * 0.10,
+  );
 }
 
 // Regulatory safety — EUDR & deforestation risk inverse.
@@ -437,24 +451,44 @@ export function syntheticWeatherForProvince(p: Province): WeatherData {
 /* --------------------------------------------------------------------------
  * Top-level assessment builder.
  * -------------------------------------------------------------------------- */
+export interface GladAlerts {
+  count: number;
+  firstAlert: string | null;
+  lastAlert: string | null;
+  source: 'gfw_integrated_alerts' | 'local_fallback' | 'none';
+}
+
 export interface BuildAssessmentInput {
   lat: number;
   lng: number;
   areaHa: number;
   weather: WeatherData | null;
   soil: SoilData | null;
-  // Optional polygon for in-bounds analytics
+  /** Optional polygon for in-bounds analytics (local forest-loss points). */
   polygonCoords?: [number, number][];
+  /** Plot-level GLAD alerts from GFW — supersedes the local polygon check. */
+  gladAlerts?: GladAlerts | null;
 }
 
 export function buildAssessment(input: BuildAssessmentInput): LandAssessment {
-  const { lat, lng, areaHa, weather, soil, polygonCoords } = input;
+  const { lat, lng, areaHa, weather, soil, polygonCoords, gladAlerts } = input;
   const prov = nearestProvince(lat, lng);
 
-  // EUDR analytics (mirrors EUDRChecker logic)
+  // ── EUDR post-cutoff loss count ───────────────────────────────────────────
+  // Prefer live GFW GLAD alerts when available; fall back to local spatial join.
   let postCutoffLoss = 0;
   let nearbyLoss = 0;
-  if (polygonCoords && polygonCoords.length >= 3) {
+
+  if (gladAlerts && gladAlerts.source !== 'none') {
+    // Plot-level data from the EUDR alerts API
+    postCutoffLoss = gladAlerts.count;
+    // Nearby loss still uses local points (broader radius context)
+    const center = turf.point([lng, lat]);
+    nearbyLoss = forestLossPoints.filter((p) => {
+      const d = turf.distance(turf.point([p.lng, p.lat]), center, { units: 'kilometers' });
+      return d < 30;
+    }).length;
+  } else if (polygonCoords && polygonCoords.length >= 3) {
     const closed = [...polygonCoords, polygonCoords[0]];
     const polygon = turf.polygon([closed]);
     const center = turf.center(polygon);
@@ -497,7 +531,12 @@ export function buildAssessment(input: BuildAssessmentInput): LandAssessment {
 
   const riskFactors: string[] = [];
   if (postCutoffLoss > 0) {
-    riskFactors.push(`${postCutoffLoss} forest loss event(s) detected after 2020 EUDR cutoff`);
+    const isGfw = gladAlerts?.source === 'gfw_integrated_alerts';
+    riskFactors.push(
+      isGfw
+        ? `${postCutoffLoss} GLAD alert(s) detected after 2020 EUDR cutoff (GFW satellite evidence)`
+        : `${postCutoffLoss} forest loss event(s) detected after 2020 EUDR cutoff (estimated)`,
+    );
   }
   if (prov.lossRate[2024] > 0.015) {
     riskFactors.push(`Near ${prov.name} — high-risk province (${(prov.lossRate[2024] * 100).toFixed(1)}% loss rate)`);
@@ -532,9 +571,11 @@ export function buildAssessment(input: BuildAssessmentInput): LandAssessment {
       changePercent: +changePct.toFixed(2),
       riskFactors,
       nearbyLossPoints: nearbyLoss,
+      ...(gladAlerts ? { gladAlerts: { count: gladAlerts.count, firstAlert: gladAlerts.firstAlert, lastAlert: gladAlerts.lastAlert, source: gladAlerts.source } } : {}),
     },
     nearestPort: port,
     cropRecommendations: crops,
+    provinceId: prov.id,
     province: prov.name,
     region: prov.region,
     areaHa: Math.round(areaHa),

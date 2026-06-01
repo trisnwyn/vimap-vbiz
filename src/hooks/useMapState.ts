@@ -8,23 +8,27 @@ export function useMapState() {
   const [showProvinces, setShowProvinces] = useState(true);
   const [showNews, setShowNews] = useState(true);
   const [showFlows, setShowFlows] = useState(false);
+  const [showLoss, setShowLoss] = useState(false);
   const [basemap, setBasemap] = useState<BasemapStyle>('dark');
 
   const toggleHeatmap = useCallback(() => setShowHeatmap((p) => !p), []);
   const toggleProvinces = useCallback(() => setShowProvinces((p) => !p), []);
   const toggleNews = useCallback(() => setShowNews((p) => !p), []);
   const toggleFlows = useCallback(() => setShowFlows((p) => !p), []);
+  const toggleLoss = useCallback(() => setShowLoss((p) => !p), []);
 
   return {
     showHeatmap,
     showProvinces,
     showNews,
     showFlows,
+    showLoss,
     basemap,
     setBasemap,
     toggleHeatmap,
     toggleProvinces,
     toggleNews,
     toggleFlows,
+    toggleLoss,
   };
 }

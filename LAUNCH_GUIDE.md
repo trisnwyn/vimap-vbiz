@@ -169,19 +169,33 @@ After updating, run `npm run dev` and:
 
 ---
 
-## Step 3 — Verify Fire Heatmap
+## Step 3 — Verify Fire Heatmap ✅ VERIFIED
 
 > **Requires Step 1c (FIRMS key) to be complete.**
 
 1. Run `npm run dev` → open the app
-2. Click the **heatmap** toggle in the header (or Legend panel)
+2. Click the **Fire Hotspots** toggle in the header (or check the Legend panel)
 3. In the current dry season (Feb–Apr): hotspots should cluster over:
    - Central Highlands (Dak Lak, Gia Lai border)
    - Mekong Delta (An Giang, Kien Giang)
    - Southern coastal strip
-4. If you see scattered procedural points instead of clustered real ones — the FIRMS key isn't active yet. Double-check `.env.local` and restart the server.
+4. **There is no procedural fallback.** If the FIRMS key is inactive, the heatmap is simply **empty** (the `/api/fire-hotspots` route returns a 503 with zero points). An empty map = key problem; double-check `.env.local` and restart the server.
 
 > **Note:** Outside dry season (May–Nov), fewer hotspots are expected. That's normal.
+
+### ✅ Verification result (last checked 2026-05-29)
+
+Tested `GET /api/fire-hotspots?days=5` against the running dev server:
+
+| Field | Value |
+|-------|-------|
+| `source` | NASA FIRMS |
+| `satellite` | VIIRS_SNPP_NRT |
+| `count` | **1,838 hotspots** (last 5 days) |
+| Sample coords | 11.9°N/109.0°E, 12.2°N/108.8°E, 13.6°N/108.7°E — Central Highlands & south-central coast |
+| Dates | 2026-05-25 (recent, real) |
+
+The FIRMS key is **active** and the layer is pulling live VIIRS satellite detections. Step 3 complete.
 
 ---
 
@@ -328,9 +342,9 @@ Step 2 — Province Data (priority provinces first)
   [ ] Remaining 55 provinces
   [ ] Change dataSource: 'modeled' → 'gfw_hansen' for updated entries
 
-Step 3 — Fire Heatmap
-  [ ] Enable heatmap layer in app
-  [ ] Confirm real VIIRS hotspots visible (not procedural scatter)
+Step 3 — Fire Heatmap ✅
+  [x] Enable heatmap layer in app
+  [x] Confirm real VIIRS hotspots visible (1,838 live points, 2026-05-29)
 
 Step 4 — News URLs
   [ ] Fill in real URLs for all isVerified: true articles

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import SearchBar from './SearchBar';
 import ExportReport from './ExportReport';
 
-type Tab = 'stats' | 'news' | 'assess' | 'ai';
+type Tab = 'stats' | 'news' | 'assess' | 'intelligence';
 type ViewMode = 'map' | 'intel';
 
 interface HeaderProps {
@@ -17,10 +17,12 @@ interface HeaderProps {
   showProvinces: boolean;
   showNews: boolean;
   showFlows: boolean;
+  showLoss: boolean;
   onToggleHeatmap: () => void;
   onToggleProvinces: () => void;
   onToggleNews: () => void;
   onToggleFlows: () => void;
+  onToggleLoss: () => void;
   onProvinceSearch: (id: string) => void;
   year: number;
   selectedProvince: string | null;
@@ -35,14 +37,17 @@ export default function Header({
   showProvinces,
   showNews,
   showFlows,
+  showLoss,
   onToggleHeatmap,
   onToggleProvinces,
   onToggleNews,
   onToggleFlows,
+  onToggleLoss,
   onProvinceSearch,
   year,
   selectedProvince,
 }: HeaderProps) {
+  const isIntel = activeTab === 'intelligence';
   return (
     <header className="glass-panel flex items-center justify-between px-5 py-3 z-50 border-b border-[#35b779]/[0.15]">
       <div className="flex items-center gap-3">
@@ -65,7 +70,7 @@ export default function Header({
           { id: 'stats' as Tab, label: 'Statistics', icon: BarChart3 },
           { id: 'news' as Tab, label: 'News Intel', icon: Newspaper },
           { id: 'assess' as Tab, label: 'Land Assess', icon: Target },
-          { id: 'ai' as Tab, label: 'AI Insights', icon: Sparkles },
+          { id: 'intelligence' as Tab, label: 'Midori', icon: Sparkles },
         ]).map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -83,13 +88,17 @@ export default function Header({
       </nav>
 
       <div className="flex items-center gap-2">
+        {!isIntel && (
         <div className="hidden md:block">
           <SearchBar onSelect={onProvinceSearch} />
         </div>
+        )}
 
+        {!isIntel && (
         <div className="hidden lg:flex items-center gap-1">
           {([
             { key: 'provinces', label: 'Provinces', active: showProvinces, toggle: onToggleProvinces, icon: Layers },
+            { key: 'loss', label: 'Forest Loss', active: showLoss, toggle: onToggleLoss, icon: TreePine },
             { key: 'heatmap', label: 'Fire Hotspots', active: showHeatmap, toggle: onToggleHeatmap, icon: showHeatmap ? Eye : EyeOff },
             { key: 'news', label: 'News', active: showNews, toggle: onToggleNews, icon: Newspaper },
             { key: 'flows', label: 'Flows', active: showFlows, toggle: onToggleFlows, icon: Route },
@@ -109,11 +118,15 @@ export default function Header({
             </button>
           ))}
         </div>
+        )}
 
+        {!isIntel && (
         <div className="hidden md:block">
           <ExportReport year={year} selectedProvince={selectedProvince} />
         </div>
+        )}
 
+        {!isIntel && (
         <div
           role="group"
           aria-label="View mode"
@@ -139,6 +152,20 @@ export default function Header({
             </button>
           ))}
         </div>
+        )}
+
+        {/* Mobile-only view toggle — the full switch above is hidden below sm.
+            Single button shows the icon of the view you'd switch TO. */}
+        {!isIntel && (
+        <button
+          onClick={() => onViewModeChange(viewMode === 'map' ? 'intel' : 'map')}
+          aria-label={viewMode === 'map' ? 'Switch to Intel view' : 'Switch to Map view'}
+          title="Switch view"
+          className="sm:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg glass-btn text-[#374151] hover:text-[#111827] transition-all"
+        >
+          {viewMode === 'map' ? <LayoutDashboard className="w-4 h-4" /> : <MapIcon className="w-4 h-4" />}
+        </button>
+        )}
 
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg glass-btn">
           <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />

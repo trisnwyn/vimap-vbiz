@@ -28,6 +28,7 @@ interface MapViewProps {
   showHeatmap: boolean;
   showProvinces: boolean;
   showFlows: boolean;
+  showLoss: boolean;
   basemap: BasemapStyle;
   drawingMode: boolean;
   drawPoints: [number, number][];
@@ -38,6 +39,13 @@ interface MapViewProps {
 
 // Vietnam bounding box for fallback filtering when boundary polygons are unavailable
 const VN_BBOX = { minLng: 102.14, maxLng: 109.46, minLat: 8.18, maxLat: 23.39 };
+
+// GFW dense tree-cover-loss raster (Hansen/UMD), 30% canopy density, all loss years 2001–2023.
+// Public tile service with CORS (access-control-allow-origin: *), version pinned for stability.
+// NOTE: this endpoint renders ALL loss years — start_year/end_year params are ignored server-side,
+// so this layer is intentionally NOT year-filtered (the year-aware signal lives in the province dots).
+const GFW_LOSS_TILES =
+  'https://tiles.globalforestwatch.org/umd_tree_cover_loss/v1.13/dynamic/{z}/{x}/{y}.png?tree_cover_density_threshold=30';
 
 function isPolygonFeature(
   feature: GeoJSON.Feature,
@@ -51,6 +59,7 @@ export default function MapView({
   showHeatmap,
   showProvinces,
   showFlows,
+  showLoss,
   basemap,
   drawingMode,
   drawPoints,
@@ -116,6 +125,26 @@ export default function MapView({
     const featureCollection = boundaryGeoJSON as GeoJSON.FeatureCollection;
     return featureCollection.features.filter(isPolygonFeature);
   }, [boundaryGeoJSON]);
+
+  // Inverse "country mask" — a world-covering polygon with Vietnam punched out as a hole.
+  // Rendered above the GFW loss raster to clip it precisely to Vietnam's territory.
+  // Falls back to the bounding box if precise boundary polygons haven't loaded yet.
+  const vietnamMaskGeoJSON = useMemo(() => {
+    try {
+      const territory = vietnamBoundaryFeatures.length > 0
+        ? turf.combine(turf.featureCollection(
+            vietnamBoundaryFeatures as GeoJSON.Feature<GeoJSON.Polygon | GeoJSON.MultiPolygon>[],
+          ))
+        : turf.featureCollection([
+            turf.bboxPolygon([VN_BBOX.minLng, VN_BBOX.minLat, VN_BBOX.maxLng, VN_BBOX.maxLat]),
+          ]);
+      return turf.mask(
+        territory as GeoJSON.FeatureCollection<GeoJSON.Polygon | GeoJSON.MultiPolygon>,
+      ) as GeoJSON.Feature;
+    } catch {
+      return null;
+    }
+  }, [vietnamBoundaryFeatures]);
 
   const fireHotspotGeoJSON = useMemo(() => ({
     type: 'FeatureCollection' as const,
@@ -360,6 +389,47 @@ export default function MapView({
         </Source>
       )}
 
+      {/* GFW dense tree-cover-loss raster (Hansen/UMD) — all loss years 2001–2023.
+          Placed above boundaries but below dots/heatmap so markers stay readable.
+          The mask fill above it clips the raster to Vietnam's territory. */}
+      {showLoss && (
+        <Source
+          id="gfw-loss"
+          type="raster"
+          tiles={[GFW_LOSS_TILES]}
+          tileSize={256}
+          attribution="Hansen/UMD/Google/USGS/NASA — Global Forest Watch"
+        >
+          <Layer
+            id="gfw-loss-raster"
+            type="raster"
+            paint={{
+              'raster-opacity': [
+                'interpolate', ['linear'], ['zoom'],
+                4, 0.32,
+                8, 0.38,
+                11, 0.42,
+              ],
+            }}
+          />
+        </Source>
+      )}
+
+      {/* Country mask: covers everything outside Vietnam so the loss raster reads
+          only over Vietnamese territory (and gives a subtle spotlight focus). */}
+      {showLoss && vietnamMaskGeoJSON && (
+        <Source id="vn-mask" type="geojson" data={vietnamMaskGeoJSON}>
+          <Layer
+            id="vn-mask-fill"
+            type="fill"
+            paint={{
+              'fill-color': '#0b0d0c',
+              'fill-opacity': 0.9,
+            }}
+          />
+        </Source>
+      )}
+
       {showHeatmap && (
         <Source id="heatmap" type="geojson" data={fireHotspotGeoJSON}>
           <Layer
@@ -374,14 +444,16 @@ export default function MapView({
                 8, 0.7,
                 10, 0.9,
               ],
+              // Amber→orange "thermal" ramp — deliberately distinct from the
+              // pink/magenta GFW loss raster so the two signals never read as the same thing.
               'heatmap-color': [
                 'interpolate', ['linear'], ['heatmap-density'],
                 0, 'rgba(0,0,0,0)',
-                0.15, 'rgba(255,160,0,0.15)',
-                0.35, 'rgba(255,100,0,0.30)',
-                0.55, 'rgba(255,50,0,0.42)',
-                0.75, 'rgba(230,20,0,0.55)',
-                1, 'rgba(180,0,0,0.7)',
+                0.15, 'rgba(255,236,150,0.18)',
+                0.35, 'rgba(255,205,60,0.34)',
+                0.55, 'rgba(255,165,0,0.48)',
+                0.75, 'rgba(255,120,0,0.60)',
+                1, 'rgba(255,87,34,0.74)',
               ],
               'heatmap-radius': [
                 'interpolate', ['linear'], ['zoom'],
@@ -482,10 +554,10 @@ export default function MapView({
               'circle-color': [
                 'interpolate', ['linear'], ['get', 'lossRate'],
                 0, '#00dc82',
-                0.005, '#66bb6a',
-                0.01, '#fdd835',
-                0.02, '#ff9800',
-                0.03, '#f44336',
+                0.002, '#7bd650',
+                0.005, '#fdd835',
+                0.01, '#ff9800',
+                0.015, '#f44336',
               ],
               'circle-opacity': 0.75,
               'circle-stroke-width': 1.5,
