@@ -1,8 +1,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { ExternalLink, MapPin, Calendar } from 'lucide-react';
-import { newsArticles } from '@/data/news-articles';
+import { ExternalLink, MapPin, Calendar, Loader2 } from 'lucide-react';
+import { useNews } from '@/hooks/useNews';
 import { categoryColors } from '@/constants/colors';
 
 function getSearchUrl(title: string, source: string): string {
@@ -26,14 +26,18 @@ const CATEGORIES = [
 ] as const;
 
 export default function NewsPanel({ year, selectedNewsId, onNewsSelect }: NewsPanelProps) {
+  const { articles: newsArticles, loading, error } = useNews();
   const [filter, setFilter] = useState<string>('all');
 
+  // Cap the year filter at the current calendar year so live articles
+  // (which carry today's date) are never hidden by the time slider.
+  const currentYear = new Date().getFullYear();
   const filtered = useMemo(() => {
     return newsArticles
-      .filter((a) => new Date(a.date).getFullYear() <= year)
+      .filter((a) => new Date(a.date).getFullYear() <= Math.max(year, currentYear))
       .filter((a) => filter === 'all' || a.category === filter)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [year, filter]);
+  }, [newsArticles, year, filter, currentYear]);
 
   return (
     <div className="h-full flex flex-col gap-3 p-3 overflow-hidden">
@@ -61,6 +65,15 @@ export default function NewsPanel({ year, selectedNewsId, onNewsSelect }: NewsPa
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+        {loading && (
+          <div className="flex items-center gap-2 py-4 text-xs text-[#6b7280]">
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-accent" />
+            Fetching latest news…
+          </div>
+        )}
+        {error && !loading && newsArticles.length === 0 && (
+          <p className="text-xs text-[#9ca3af] py-4 text-center">Couldn&apos;t load live news. Check your connection.</p>
+        )}
         {filtered.map((article) => (
           <div
             key={article.id}

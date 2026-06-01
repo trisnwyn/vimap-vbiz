@@ -13,6 +13,8 @@ import MidoriGreeting from '../../midori/MidoriGreeting';
 interface ChatTabProps {
   mode: ChatMode;
   year: number;
+  pendingQuery?: string | null;
+  onQueryConsumed?: () => void;
 }
 
 const MODE_META = {
@@ -24,7 +26,7 @@ const MODE_META = {
   },
 } as const;
 
-export default function ChatTab({ mode, year }: ChatTabProps) {
+export default function ChatTab({ mode, year, pendingQuery, onQueryConsumed }: ChatTabProps) {
   const { messages, busy, send, completeTurn, clear } = useIntelChat();
   const { lastBriefing } = useLastBriefing();
   const { profile } = useBusinessProfile();
@@ -32,8 +34,22 @@ export default function ChatTab({ mode, year }: ChatTabProps) {
   const [turnMode, setTurnMode] = useState<TurnMode>('research');
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const pendingFiredRef = useRef(false);
 
   const meta = MODE_META[mode];
+
+  // Auto-send a pending query (e.g. from "Ask Midori") exactly once.
+  useEffect(() => {
+    if (!pendingQuery || pendingFiredRef.current || busy) return;
+    pendingFiredRef.current = true;
+    send(pendingQuery, 'research');
+    onQueryConsumed?.();
+  }, [pendingQuery, busy, send, onQueryConsumed]);
+
+  // Reset the ref when pendingQuery clears so a new one can fire.
+  useEffect(() => {
+    if (!pendingQuery) pendingFiredRef.current = false;
+  }, [pendingQuery]);
 
   // Auto-scroll to bottom when messages update.
   useEffect(() => {

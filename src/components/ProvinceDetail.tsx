@@ -4,11 +4,13 @@ import { useMemo } from 'react';
 import { X, MapPin, TreePine, TrendingDown, TrendingUp, Package, AlertTriangle } from 'lucide-react';
 import { provinces } from '@/data/provinces';
 import { interpolateYear, formatNum } from '@/data/utils';
+import MidoriAvatar from './midori/MidoriAvatar';
 
 interface ProvinceDetailProps {
   provinceId: string;
   year: number;
   onClose: () => void;
+  onAskMidori?: (query: string) => void;
 }
 
 const DATA_YEARS = [2000, 2005, 2010, 2015, 2020, 2024];
@@ -50,7 +52,7 @@ function Sparkline({ data, color, height = 32 }: { data: number[]; color: string
 
 const EUDR_COMMODITIES = ['coffee', 'rubber', 'timber', 'shrimp'];
 
-export default function ProvinceDetail({ provinceId, year, onClose }: ProvinceDetailProps) {
+export default function ProvinceDetail({ provinceId, year, onClose, onAskMidori }: ProvinceDetailProps) {
   const province = useMemo(() => provinces.find((p) => p.id === provinceId), [provinceId]);
 
   const stats = useMemo(() => {
@@ -97,6 +99,7 @@ export default function ProvinceDetail({ provinceId, year, onClose }: ProvinceDe
   const rc = riskColors[stats.riskLevel];
 
   return (
+    <>
     <div className="absolute top-3 left-3 lg:left-[292px] w-[calc(100%-24px)] sm:w-[300px] z-30 glass-panel rounded-xl border border-[#35b779]/[0.20] shadow-2xl animate-fade-in overflow-hidden max-h-[calc(100vh-120px)] overflow-y-auto">
       {/* Header */}
       <div className="flex items-start justify-between p-3 pb-2 border-b border-[#35b779]/[0.15]">
@@ -264,7 +267,34 @@ export default function ProvinceDetail({ provinceId, year, onClose }: ProvinceDe
             </table>
           </div>
         </div>
+
       </div>
+
     </div>
+
+    {/* Floating Midori bubble — rendered OUTSIDE the glass-panel div so
+        backdrop-filter does not trap the fixed position. */}
+    {onAskMidori && (
+      <div className="fixed top-[210px] left-[340px] lg:left-[430px] z-50 flex items-end gap-2 animate-fade-in">
+        {/* Speech cloud */}
+        <div className="bg-white/95 backdrop-blur-sm border border-[#35b779]/30 shadow-xl rounded-2xl rounded-bl-none px-3 py-2.5">
+          <p className="text-[11px] font-bold text-[#111827] leading-tight">Ask Midori</p>
+          <p className="text-[10px] text-[#35b779] font-semibold leading-tight">{province.name}</p>
+        </div>
+        {/* Midori circle button */}
+        <button
+          onClick={() => onAskMidori(
+            `Research ${province.name} (${province.region}): its ${province.primaryCrop} production, ` +
+            `current forest cover trends (loss rate ${(stats.currentRate * 100).toFixed(2)}%/yr), ` +
+            `EUDR compliance risk, and investment considerations.`
+          )}
+          className="shrink-0 w-12 h-12 rounded-full overflow-hidden shadow-xl ring-2 ring-[#35b779]/40 hover:ring-[#35b779]/70 hover:scale-110 transition-all"
+          aria-label={`Ask Midori about ${province.name}`}
+        >
+          <MidoriAvatar size="md" gem />
+        </button>
+      </div>
+    )}
+    </>
   );
 }

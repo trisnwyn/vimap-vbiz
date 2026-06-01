@@ -17,6 +17,7 @@ import { DataDisclaimer } from '@/components/DataSourceBadge';
 import { Menu, BarChart3, Newspaper, Target, Sparkles } from 'lucide-react';
 import { useMapState } from '@/hooks/useMapState';
 import { useDrawingMode } from '@/hooks/useDrawingMode';
+import { useNews } from '@/hooks/useNews';
 import { useURLState, useInitialURLState, type ViewMode } from '@/hooks/useURLState';
 
 const MapView = dynamic(() => import('@/components/MapView'), {
@@ -55,8 +56,10 @@ function Dashboard() {
   const [showDetail, setShowDetail] = useState(false);
   const [selectedNewsId, setSelectedNewsId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [pendingMidoriQuery, setPendingMidoriQuery] = useState<string | null>(null);
 
   const mapState = useMapState();
+  const { articles: liveNews } = useNews();
   const {
     drawingMode, drawPoints, setDrawingMode,
     handleMapClick, handleStartDraw, handleClearDraw,
@@ -85,6 +88,11 @@ function Dashboard() {
   const handleProvinceSearch = useCallback((id: string) => {
     setSelectedProvince(id);
     setActiveTab('stats');
+  }, []);
+
+  const handleAskMidori = useCallback((query: string) => {
+    setPendingMidoriQuery(query);
+    setActiveTab('intelligence');
   }, []);
 
   const isIntel = viewMode === 'intel';
@@ -156,6 +164,7 @@ function Dashboard() {
           setSelectedNewsId(id);
           if (id) setActiveTab('news');
         }}
+        newsArticles={liveNews}
       />
     </ErrorBoundary>
   );
@@ -197,7 +206,12 @@ function Dashboard() {
           <div className="sm:hidden shrink-0">{mobileTabBar}</div>
           <div className="flex-1 overflow-hidden">
             <ErrorBoundary fallbackTitle="Intelligence dashboard failed">
-              <IntelligenceDashboard year={year} selectedProvince={selectedProvince} />
+              <IntelligenceDashboard
+                year={year}
+                selectedProvince={selectedProvince}
+                pendingQuery={pendingMidoriQuery}
+                onQueryConsumed={() => setPendingMidoriQuery(null)}
+              />
             </ErrorBoundary>
           </div>
         </div>
@@ -228,6 +242,7 @@ function Dashboard() {
                     provinceId={selectedProvince}
                     year={year}
                     onClose={() => setShowDetail(false)}
+                    onAskMidori={handleAskMidori}
                   />
                 </div>
               )}
@@ -277,6 +292,7 @@ function Dashboard() {
                 provinceId={selectedProvince}
                 year={year}
                 onClose={() => setShowDetail(false)}
+                onAskMidori={handleAskMidori}
               />
             )}
 

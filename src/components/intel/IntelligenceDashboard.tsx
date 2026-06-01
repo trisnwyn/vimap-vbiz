@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { TrendingUp, Telescope, Building2 } from 'lucide-react';
 import { useBusinessProfile } from '@/hooks/useBusinessProfile';
 import type { BusinessProfile } from '@/types/intel';
@@ -10,12 +10,15 @@ import ChatTab from './dashboard/ChatTab';
 import ProfileTab from './dashboard/ProfileTab';
 import MidoriAvatar from '../midori/MidoriAvatar';
 import MidoriSplash from '../midori/MidoriSplash';
+import MidoriNoticed from '../midori/MidoriNoticed';
 
 type SubTab = 'trends' | 'research' | 'profile';
 
 interface IntelligenceDashboardProps {
   year: number;
   selectedProvince: string | null;
+  pendingQuery?: string | null;
+  onQueryConsumed?: () => void;
 }
 
 const NAV: { id: SubTab; label: string; hint: string; icon: typeof TrendingUp }[] = [
@@ -24,11 +27,26 @@ const NAV: { id: SubTab; label: string; hint: string; icon: typeof TrendingUp }[
   { id: 'profile', label: 'Company Profile', hint: 'Personalize the agent', icon: Building2 },
 ];
 
-export default function IntelligenceDashboard({ year, selectedProvince }: IntelligenceDashboardProps) {
+export default function IntelligenceDashboard({ year, selectedProvince, pendingQuery, onQueryConsumed }: IntelligenceDashboardProps) {
   const { profile, hydrated, hasProfile, saveProfile } = useBusinessProfile();
   const [subTab, setSubTab] = useState<SubTab>('trends');
   // After onboarding we want the briefing to auto-run on the Trends tab.
   const [autoRunToken, setAutoRunToken] = useState(0);
+
+  // Research queries can arrive from two sources: the map ("Ask Midori",
+  // via the pendingQuery prop) and the in-dashboard "Midori noticed" banner
+  // (internalPending). Merge both before handing one to ChatTab.
+  const [internalPending, setInternalPending] = useState<string | null>(null);
+  const effectivePending = pendingQuery ?? internalPending;
+  const clearPending = useCallback(() => {
+    onQueryConsumed?.();
+    setInternalPending(null);
+  }, [onQueryConsumed]);
+
+  // Auto-switch to the research sub-tab whenever a query is queued.
+  useEffect(() => {
+    if (effectivePending) setSubTab('research');
+  }, [effectivePending]);
 
   const handleOnboard = useCallback(
     (next: BusinessProfile) => {
@@ -72,6 +90,13 @@ export default function IntelligenceDashboard({ year, selectedProvince }: Intell
   return (
     <>
     <MidoriSplash />
+    {hasProfile && profile && (
+      <MidoriNoticed
+        profile={profile}
+        year={year}
+        onResearch={(q) => { setInternalPending(q); setSubTab('research'); }}
+      />
+    )}
     <div className="h-full flex flex-col md:flex-row bg-background overflow-hidden">
       {/* Mobile: horizontal scroll tab bar */}
       <nav className="md:hidden flex items-center gap-1 p-2 border-b border-[#35b779]/[0.15] overflow-x-auto shrink-0 bg-[#faf8f3]/95 backdrop-blur-sm">
@@ -136,7 +161,12 @@ export default function IntelligenceDashboard({ year, selectedProvince }: Intell
           />
         )}
         {subTab === 'research' && (
-          <ChatTab mode="agentic" year={year} />
+          <ChatTab
+            mode="agentic"
+            year={year}
+            pendingQuery={effectivePending}
+            onQueryConsumed={clearPending}
+          />
         )}
         {subTab === 'profile' && (
           <ProfileTab onSaveAndRun={handleOnboard} />

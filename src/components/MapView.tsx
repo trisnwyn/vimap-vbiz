@@ -8,8 +8,8 @@ import * as turf from '@turf/turf';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { provinces } from '@/data/provinces';
 import { interpolateYear } from '@/data/utils';
-import { newsArticles } from '@/data/news-articles';
 import { supplyRoutes, commodityColors } from '@/data/supply-chains';
+import type { NewsArticle } from '@/types';
 import type { BasemapStyle } from './BasemapSwitcher';
 import { BASEMAP_URLS, getSatelliteStyle } from './BasemapSwitcher';
 
@@ -35,6 +35,7 @@ interface MapViewProps {
   onMapClick: (lng: number, lat: number) => void;
   onProvinceSelect: (id: string | null) => void;
   onNewsSelect: (id: string | null) => void;
+  newsArticles?: NewsArticle[];
 }
 
 // Vietnam bounding box for fallback filtering when boundary polygons are unavailable
@@ -66,6 +67,7 @@ export default function MapView({
   onMapClick,
   onProvinceSelect,
   onNewsSelect,
+  newsArticles = [],
 }: MapViewProps) {
   const mapRef = useRef<MapRef>(null);
   const [hoverInfo, setHoverInfo] = useState<{
@@ -190,7 +192,7 @@ export default function MapView({
         geometry: { type: 'Point' as const, coordinates: [a.lng, a.lat] },
         properties: { id: a.id, title: a.title, source: a.source, category: a.category },
       })),
-  }), [year]);
+  }), [newsArticles, year]);
 
   // Supply chain flow lines
   const flowGeoJSON = useMemo(() => ({
@@ -298,8 +300,13 @@ export default function MapView({
   const handleMouseMove = useCallback(
     (e: MapLayerMouseEvent) => {
       try {
+        // Guard: only query layers that are actually loaded in the current style.
+        const availableLayers = ['province-circles', 'news-markers'].filter(
+          (id) => !!e.target.getLayer(id),
+        );
+        if (!availableLayers.length) return;
         const features = e.target.queryRenderedFeatures(e.point, {
-          layers: ['province-circles', 'news-markers'],
+          layers: availableLayers,
         });
         if (features.length > 0) {
           const f = features[0];
