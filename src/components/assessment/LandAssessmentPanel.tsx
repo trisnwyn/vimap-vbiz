@@ -30,6 +30,8 @@ interface Props {
   onStartDraw: () => void;
   onClearDraw: () => void;
   density?: Density;
+  /** Called when a full assessment becomes available (or null when cleared). */
+  onAssessmentReady?: (query: string | null) => void;
 }
 
 type AssessTarget =
@@ -61,6 +63,7 @@ export default function LandAssessmentPanel({
   onStartDraw,
   onClearDraw,
   density = 'compact',
+  onAssessmentReady,
 }: Props) {
   const target = useMemo(
     () => deriveTarget(drawPoints, selectedProvinceId),
@@ -188,6 +191,21 @@ export default function LandAssessmentPanel({
         : null,
     });
   }, [target, weather, soil, gladAlerts]);
+
+  // Notify parent when a full assessment is ready so it can render the
+  // floating "Research with Midori" bubble outside this glass-panel container.
+  useEffect(() => {
+    if (!assessment) { onAssessmentReady?.(null); return; }
+    const top3crops = assessment.cropRecommendations.slice(0, 3).map((c) => c.name).join(', ') || 'unknown';
+    const query =
+      `Deep research on a ${assessment.areaHa.toFixed(0)} ha plot in ${assessment.province} (${assessment.region}): ` +
+      `investment score ${assessment.investmentScore}/100 (${assessment.rating}), ` +
+      `EUDR ${assessment.eudr.status} (${assessment.eudr.changePercent > 0 ? '+' : ''}${assessment.eudr.changePercent.toFixed(1)}% forest change since 2020), ` +
+      `soil quality ${assessment.suitability.soilQuality}/100, climate ${assessment.suitability.climate}/100, ` +
+      `top crop fits: ${top3crops}, ${assessment.nearestPort.distanceKm} km to ${assessment.nearestPort.name}. ` +
+      `What are the key investment risks, EUDR compliance steps, and market outlook for this specific location?`;
+    onAssessmentReady?.(query);
+  }, [assessment, onAssessmentReady]);
 
   const isWide = density === 'wide';
 

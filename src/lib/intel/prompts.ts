@@ -142,6 +142,9 @@ export const SYNTH_SYSTEM =
   '(2) Data sections — tables, raw numbers, cited statistics — stay dry, third-person, and precise. Do not attach "I" to a data point. ' +
   '(3) Interpretive and summary paragraphs may use first-person naturally: "I found", "I recommend watching", "I think the key risk here is…". ' +
   '(4) Your register is measured and direct — a senior analyst presenting findings, not a customer service agent. ' +
+  '(5) CASUAL MESSAGES — if the user question is a greeting, very short, or non-analytical (e.g. "hello", "hi", "thanks"), ' +
+  'do NOT generate a full market briefing. Instead put a brief 1-2 sentence conversational reply in "executiveSummary", ' +
+  'leave "topics", "sections", "risks", and "recommendations" as empty arrays, and set "headline" to "Midori". ' +
   'Every claim sourced from evidence must cite it by id (e.g. "c3"). You output ONLY a JSON object — no markdown, no code fences, no prose outside the JSON.';
 
 export interface SynthesisInputs {
@@ -167,7 +170,7 @@ export function synthesisPrompt(inp: SynthesisInputs): string {
         .map(
           (c) =>
             `[${c.id}] ${c.title} — ${c.source}${c.publishedAt ? ` (${c.publishedAt.slice(0, 10)})` : ''}${
-              c.snippet ? `\n      ${c.snippet.slice(0, 220)}` : ''
+              c.snippet ? `\n      ${c.snippet.slice(0, 500)}` : ''
             }`,
         )
         .join('\n')
@@ -183,8 +186,22 @@ export function synthesisPrompt(inp: SynthesisInputs): string {
     : '';
 
   const task = question
-    ? `Answer the user's question directly, specifically, and with evidence. "executiveSummary" MUST be a decision-grade answer to the question (not a generic overview); "headline" restates the answer's thrust in one line. Use "topics", "sections", "risks" and "recommendations" to support and extend that answer for THIS user's commodities, markets, and concerns. Connect web developments to the internal forest/fire data where relevant. Be concrete and quantitative. Attach citation ids only to claims actually supported by that evidence. ${lang}`
-    : `Synthesize the above into a briefing that is specific to THIS user's commodities, markets, and concerns. Connect web developments to the internal forest/fire data where relevant. Be concrete and quantitative. Attach citation ids only to claims actually supported by that evidence. ${lang}`;
+    ? `Answer the user's question directly, specifically, and with evidence. ` +
+      `"executiveSummary" MUST be a thorough, decision-grade answer (5–8 sentences) covering: what is happening, why it matters to this user, key numbers/dates, and the single most important action. ` +
+      `"headline" restates the answer's thrust in one punchy line. ` +
+      `Populate "topics" with every relevant development from the evidence — do not stop at 3. ` +
+      `Each topic "summary" must be 3–5 sentences with quantitative context. ` +
+      `Each section "body" must be 2–3 substantive paragraphs — do NOT write one-liners. ` +
+      `"risks" should cover financial, regulatory, supply-chain, and climate angles with 2–3 sentence rationales each. ` +
+      `"recommendations" must be specific, actionable, and prioritised — mention timelines or thresholds where possible. ` +
+      `Connect every web development to the internal forest/fire data. Cite aggressively. ${lang}`
+    : `Synthesize the above into a comprehensive briefing specific to THIS user's commodities, markets, and concerns. ` +
+      `"executiveSummary" must be 5–8 sentences covering the headline finding, supporting data, and the user's most urgent action. ` +
+      `Each topic "summary" must be 3–5 sentences with quantitative context. ` +
+      `Each section "body" must be 2–3 substantive paragraphs — do NOT write one-liners. ` +
+      `"risks" should cover financial, regulatory, supply-chain, and climate angles with 2–3 sentence rationales each. ` +
+      `"recommendations" must be specific, actionable, and prioritised — mention timelines or thresholds where possible. ` +
+      `Connect web developments to internal forest/fire data. Cite aggressively. ${lang}`;
 
   return `Produce a personalized intelligence briefing for this user:
 
@@ -210,26 +227,26 @@ ${task}
 
 Return ONLY this JSON object:
 {
-  "headline": "punchy one-line headline for this user",
-  "executiveSummary": "2–4 sentence summary of what matters most right now",
+  "headline": "punchy one-line headline capturing the single most important finding",
+  "executiveSummary": "5–8 sentence analytical narrative: what is happening, why it matters to this user, key numbers/dates, and the most urgent action",
   "topics": [
     {
       "title": "short topic title",
-      "summary": "2–3 sentences",
+      "summary": "3–5 sentences with quantitative context, trend direction, and user-specific implication",
       "category": "eudr|deforestation|policy|climate|agriculture|price|supply",
       "severity": "critical|high|medium|low",
-      "relevance": "one sentence on why this matters to THIS user",
+      "relevance": "1–2 sentences on why this directly affects THIS user's commodities, markets, or sourcing provinces",
       "citationIds": ["c1"]
     }
   ],
   "sections": [
-    { "heading": "section heading", "body": "1 paragraph", "citationIds": ["c2"] }
+    { "heading": "section heading", "body": "2–3 substantive paragraphs with evidence, numbers, and analysis — NOT a one-liner", "citationIds": ["c2"] }
   ],
   "risks": [
-    { "label": "risk name", "score": 0-100, "trend": "up|down|flat", "rationale": "one sentence" }
+    { "label": "risk name", "score": 0-100, "trend": "up|down|flat", "rationale": "2–3 sentences explaining the mechanism, timeline, and this user's specific exposure" }
   ],
-  "recommendations": ["prioritized, profile-specific action", "..."]
+  "recommendations": ["specific, actionable step with a timeline or threshold where possible", "..."]
 }
 
-Provide 3–5 topics, 2–4 sections, 4–6 risks, and 3–5 recommendations.`;
+Provide 4–7 topics, 3–5 sections, 5–7 risks, and 4–6 recommendations. Do not truncate — populate every field fully.`;
 }

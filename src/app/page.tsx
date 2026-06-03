@@ -15,6 +15,7 @@ import BasemapSwitcher from '@/components/BasemapSwitcher';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { DataDisclaimer } from '@/components/DataSourceBadge';
 import { Menu, BarChart3, Newspaper, Target, Sparkles } from 'lucide-react';
+import MidoriAvatar from '@/components/midori/MidoriAvatar';
 import { useMapState } from '@/hooks/useMapState';
 import { useDrawingMode } from '@/hooks/useDrawingMode';
 import { useNews } from '@/hooks/useNews';
@@ -57,6 +58,11 @@ function Dashboard() {
   const [selectedNewsId, setSelectedNewsId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pendingMidoriQuery, setPendingMidoriQuery] = useState<string | null>(null);
+  const [assessMidoriQuery, setAssessMidoriQuery] = useState<string | null>(null);
+
+  const handleAssessmentReady = useCallback((query: string | null) => {
+    setAssessMidoriQuery(query);
+  }, []);
 
   const mapState = useMapState();
   const { articles: liveNews } = useNews();
@@ -114,6 +120,7 @@ function Dashboard() {
             onStartDraw={handleStartDraw}
             onClearDraw={handleClearDraw}
             density={density}
+            onAssessmentReady={handleAssessmentReady}
           />
         );
     }
@@ -294,6 +301,23 @@ function Dashboard() {
                 onClose={() => setShowDetail(false)}
                 onAskMidori={handleAskMidori}
               />
+            )}
+
+            {/* Floating "Research with Midori" bubble — shown when an assessment is loaded */}
+            {activeTab === 'assess' && assessMidoriQuery && (
+              <div className="fixed top-[210px] left-[340px] lg:left-[430px] z-50 flex items-end gap-2 animate-fade-in">
+                <div className="bg-white/95 backdrop-blur-sm border border-[#35b779]/30 shadow-xl rounded-2xl rounded-bl-none px-3 py-2.5">
+                  <p className="text-[11px] font-bold text-[#111827] leading-tight">Research with Midori</p>
+                  <p className="text-[10px] text-[#35b779] font-semibold leading-tight">Full analysis of this plot</p>
+                </div>
+                <button
+                  onClick={() => handleAskMidori(assessMidoriQuery)}
+                  className="shrink-0 w-12 h-12 rounded-full overflow-hidden shadow-xl ring-2 ring-[#35b779]/40 hover:ring-[#35b779]/70 hover:scale-110 transition-all"
+                  aria-label="Research this assessment with Midori"
+                >
+                  <MidoriAvatar size="md" gem />
+                </button>
+              </div>
             )}
 
             <BasemapSwitcher value={mapState.basemap} onChange={mapState.setBasemap} />

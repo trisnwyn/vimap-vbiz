@@ -47,7 +47,7 @@ function SourceList({ citations }: { citations: Citation[] }) {
       {/* Expanded list */}
       {open && (
         <div className="mt-1.5 space-y-1">
-          {citations.slice(0, 8).map((c) => (
+          {citations.map((c) => (
             <a
               key={c.id}
               href={c.url}

@@ -27,6 +27,7 @@ import type {
   Topic,
 } from '@/types/intel';
 import { getSearchProvider, type SearchResult } from './searchProvider';
+import { provinces } from '@/data/provinces';
 import {
   bucketFiresToProvinces,
   getActiveFires,
@@ -447,7 +448,25 @@ export async function* runIntelAgent(
     yield evt('analyzing', 'status', 'Cross-checking against VinMap forest, fire & World Bank data…');
     throwIfAborted();
 
-    const scopeIds = profile.sourcingProvinces.length ? profile.sourcingProvinces : undefined;
+    // Expand scope: if the question mentions a specific province by name, add it
+    // so the data context is relevant to what was actually asked.
+    const questionLower = (question ?? '').toLowerCase();
+    const mentionedIds = questionLower
+      ? provinces
+          .filter(
+            (p) =>
+              questionLower.includes(p.name.toLowerCase()) ||
+              questionLower.includes(p.nameVi.toLowerCase()) ||
+              questionLower.includes(p.id.replace(/_/g, ' ')),
+          )
+          .map((p) => p.id)
+      : [];
+    const baseScope = profile.sourcingProvinces.length ? profile.sourcingProvinces : undefined;
+    const scopeIds =
+      mentionedIds.length > 0
+        ? ([...new Set([...(baseScope ?? []), ...mentionedIds])] as string[])
+        : baseScope;
+
     const [national, topRisk] = await Promise.all([
       getNationalSummary(year, scopeIds),
       getTopRiskProvinces(year, 6, scopeIds),
@@ -526,7 +545,7 @@ export async function* runIntelAgent(
             })),
             question,
           }),
-          { temperature: 0.55, maxTokens: 2600, signal },
+          { temperature: 0.55, maxTokens: 4500, signal },
         );
         const parsed = raw ? parseJsonLoose<Record<string, unknown>>(raw) : null;
         if (parsed) {
