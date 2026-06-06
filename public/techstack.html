@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VinMap — Tech Stack</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0a0f0a;
+    color: #e8f0e8;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    padding: 32px 24px 64px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  header .wordmark {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #4ade80;
+    margin-bottom: 8px;
+  }
+  header h1 {
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 700;
+    color: #f0faf0;
+    letter-spacing: -0.5px;
+  }
+  header p {
+    color: #6b8a6b;
+    font-size: 14px;
+    margin-top: 8px;
+  }
+
+  .tab-row {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 36px;
+  }
+  .tab {
+    padding: 8px 22px;
+    border-radius: 99px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid #1e3a1e;
+    background: transparent;
+    color: #6b8a6b;
+    transition: all 0.2s;
+    letter-spacing: 0.01em;
+  }
+  .tab:hover { border-color: #2d5a2d; color: #a8d0a8; }
+  .tab.active { background: #1a3a1a; border-color: #4ade80; color: #4ade80; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #4ade80;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  /* ── TREEMAP ─────────────────────────────────────────── */
+  .treemap-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  svg.treemap { width: 100%; border-radius: 14px; overflow: hidden; }
+
+  .node rect {
+    stroke: #0a0f0a;
+    stroke-width: 2px;
+    rx: 6;
+    transition: opacity 0.15s;
+  }
+  .node:hover rect { opacity: 0.88; }
+  .node text { pointer-events: none; dominant-baseline: hanging; }
+  .node .cat-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    fill: rgba(255,255,255,0.55);
+  }
+  .node .tech-name {
+    font-size: 13px;
+    font-weight: 700;
+    fill: rgba(255,255,255,0.92);
+  }
+  .node .tech-detail {
+    font-size: 10.5px;
+    fill: rgba(255,255,255,0.5);
+  }
+
+  /* ── TOOLTIP ─────────────────────────────────────────── */
+  #tooltip {
+    position: fixed;
+    pointer-events: none;
+    background: #111f11;
+    border: 1px solid #2d5a2d;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    max-width: 240px;
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.15s;
+    line-height: 1.6;
+  }
+  #tooltip .tt-cat { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #4ade80; margin-bottom: 4px; }
+  #tooltip .tt-name { font-weight: 700; color: #f0faf0; font-size: 14px; }
+  #tooltip .tt-ver  { color: #6b8a6b; font-size: 12px; }
+  #tooltip .tt-desc { color: #a8c8a8; margin-top: 6px; font-size: 12px; line-height: 1.55; }
+
+  /* ── ROADMAP SECTION ─────────────────────────────────── */
+  .roadmap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .phase-card {
+    background: #0e1a0e;
+    border: 1px solid #1e3a1e;
+    border-radius: 14px;
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+  .phase-card:hover { border-color: #2d5a2d; }
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .phase-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 99px;
+    flex-shrink: 0;
+  }
+  .phase-title { font-size: 15px; font-weight: 700; color: #f0faf0; }
+  .phase-sub   { font-size: 11px; color: #6b8a6b; margin-top: 2px; }
+
+  .rm-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #141f14;
+  }
+  .rm-item:last-child { border-bottom: none; }
+  .rm-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 6px;
+  }
+  .rm-tech  { font-size: 13px; font-weight: 600; color: #d0ead0; }
+  .rm-why   { font-size: 11.5px; color: #6b8a6b; margin-top: 2px; line-height: 1.4; }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin: 0 auto 32px;
+    max-width: 900px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #6b8a6b;
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .legend-item:hover { color: #a8d0a8; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wordmark">VinMap · vBiz</div>
+  <h1>Tech Stack Overview</h1>
+  <p>Current MVP build &amp; future roadmap</p>
+</header>
+
+<div class="tab-row">
+  <button class="tab active" onclick="showTab('mvp')">Current MVP</button>
+  <button class="tab" onclick="showTab('roadmap')">Roadmap</button>
+</div>
+
+<!-- ── MVP VIEW ───────────────────────────────────── -->
+<div id="view-mvp">
+  <p class="section-label">Tech Stack Treemap — size = relative importance</p>
+  <div class="legend" id="legend"></div>
+  <div class="treemap-wrap">
+    <svg class="treemap" id="treemap"></svg>
+  </div>
+</div>
+
+<!-- ── ROADMAP VIEW ───────────────────────────────── -->
+<div id="view-roadmap" class="hidden">
+  <p class="section-label">Planned evolution by phase</p>
+  <div class="roadmap-grid" id="roadmap-grid"></div>
+</div>
+
+<div id="tooltip"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const STACK = {
+  name: "VinMap",
+  children: [
+    {
+      name: "Frontend",
+      color: "#1a4731",
+      accent: "#4ade80",
+      children: [
+        { name: "Next.js 16", version: "16.2.6", size: 90, detail: "App Router · RSC", desc: "Core framework with App Router, server components, and API routes. Drives the entire rendering pipeline." },
+        { name: "React 19",   version: "19.2.4",  size: 80, detail: "Concurrent · Hooks", desc: "Latest React with concurrent features. Powers all interactive components, state, and the Midori chat UI." },
+        { name: "TypeScript", version: "5.x",     size: 60, detail: "Strict mode", desc: "Strict TypeScript across the entire codebase. All province data, assessment types, and API contracts are typed." },
+        { name: "Tailwind v4", version: "4.x",    size: 55, detail: "Oxide engine", desc: "New Oxide-based engine for instant compilation. Used for all layout, color, animation, and responsive breakpoints." },
+        { name: "Recharts",   version: "3.8.1",   size: 35, detail: "Charts & radar", desc: "Powers forest loss charts, suitability radar, region comparison, and forecast section charts." },
+        { name: "Lucide React", version: "1.16", size: 20, detail: "Icon system", desc: "Consistent icon set across the UI — nav, cards, badges, and status indicators." },
+      ]
+    },
+    {
+      name: "Mapping",
+      color: "#1a3447",
+      accent: "#38bdf8",
+      children: [
+        { name: "MapLibre GL", version: "5.24.0", size: 85, detail: "WebGL vector maps", desc: "Core map engine. Renders province layers, forest loss overlays, fire hotspots, and EUDR alert zones via WebGL." },
+        { name: "react-map-gl", version: "8.1.1", size: 50, detail: "React bindings", desc: "React wrapper around MapLibre. Manages map state, layer lifecycle, and event handlers declaratively." },
+        { name: "@turf/turf",  version: "7.3.5",  size: 40, detail: "Geo operations", desc: "Spatial analysis for area calculations, point-in-polygon, distance scoring, and land assessment geometry." },
+      ]
+    },
+    {
+      name: "AI / Intelligence",
+      color: "#2d1f47",
+      accent: "#a78bfa",
+      children: [
+        { name: "Anthropic",    version: "Opus 4.6", size: 80, detail: "LLM inference",    desc: "Ultra-fast inference for Midori (Research & Chat modes). Handles agentic briefings, RAG responses, and casual chat." },
+        { name: "SSE Stream",  version: "native",         size: 50, detail: "Real-time output", desc: "Server-Sent Events pipeline streams agent events (planning → fetching → synthesising → done) to the client live." },
+        { name: "RAG Pipeline", version: "custom",        size: 55, detail: "Data-grounded AI", desc: "Custom retrieval layer: province economic data + GFW stats + EUDR alerts injected into every Opus prompt." },
+        { name: "AI Quota",    version: "custom",         size: 25, detail: "Per-user limits",  desc: "Supabase-backed per-user AI request quota. Enforced on stream and chat routes with tier-aware limits." },
+      ]
+    },
+    {
+      name: "Auth",
+      color: "#3b1f1f",
+      accent: "#f87171",
+      children: [
+        { name: "Clerk",       version: "7.4.1",  size: 70, detail: "Auth + sessions", desc: "Full auth stack: sign-in, sign-up, JWT sessions, middleware protection, and user management dashboard." },
+      ]
+    },
+    {
+      name: "Backend & DB",
+      color: "#1f2d1f",
+      accent: "#86efac",
+      children: [
+        { name: "Supabase",    version: "2.106",  size: 75, detail: "Postgres + RLS",   desc: "Stores user profiles, subscription state, AI quota counters, and business profiles. Row-level security enforced." },
+        { name: "API Routes",  version: "Next 16", size: 45, detail: "Edge-ready handlers", desc: "15+ serverless API routes: /intel/stream, /intel/chat, /analyze, /gfw, /news, /fire-hotspots, /eudr/alerts…" },
+        { name: "Rate Limit",  version: "custom",  size: 25, detail: "IP-based limiter",    desc: "In-memory sliding-window rate limiter on all AI and data routes. Prevents abuse without a Redis dep." },
+      ]
+    },
+    {
+      name: "Payments",
+      color: "#2d2a1a",
+      accent: "#fbbf24",
+      children: [
+        { name: "Stripe",      version: "22.1.1", size: 65, detail: "Subscriptions",    desc: "Analyst + Pro tier subscriptions with monthly/yearly billing. Webhook handler syncs subscription state to Supabase." },
+      ]
+    },
+    {
+      name: "External APIs",
+      color: "#1a2430",
+      accent: "#67e8f9",
+      children: [
+        { name: "GFW API",     version: "REST",   size: 45, detail: "Forest Watch",     desc: "Global Forest Watch live forest loss alerts and deforestation data, hydrated per province on demand." },
+        { name: "FIRMS API",   version: "NASA",   size: 35, detail: "Fire hotspots",    desc: "NASA FIRMS fire hotspot data rendered as clustered map circles. Filtered to Vietnam bounding box." },
+        { name: "Open-Meteo",  version: "free",   size: 30, detail: "Weather data",     desc: "Free weather API providing temperature, rainfall, and climate data for the WeatherCard in land assessments." },
+        { name: "RSS Feeds",   version: "custom", size: 30, detail: "Mongabay + VnExpress", desc: "Live news from Mongabay and VnExpress Environment, parsed with fast-xml-parser, keyword-filtered, 10-min cached." },
+      ]
+    },
+    {
+      name: "Infra & Deploy",
+      color: "#1f1f2d",
+      accent: "#818cf8",
+      children: [
+        { name: "Vercel",      version: "hosted", size: 50, detail: "Edge + serverless", desc: "Production deployment. Serverless functions for API routes, global CDN for static assets, env var management." },
+      ]
+    },
+  ]
+};
+
+const ROADMAP = [
+  {
+    phase: "Phase 2",
+    label: "Near-term",
+    color: "#4ade80",
+    bg: "#0e2a1e",
+    timeline: "0–3 months",
+    items: [
+      { tech: "Tavily Search API", why: "Give Midori real-time web search for news, policy updates, and commodity prices beyond static data", dot: "#67e8f9" },
+      { tech: "Redis (Upstash)", why: "Replace in-memory rate limiter + news cache with persistent, edge-compatible Redis — survives cold starts", dot: "#fbbf24" },
+      { tech: "PostHog", why: "Product analytics: funnel tracking, feature flags, session replay, cohort analysis for growth decisions", dot: "#f87171" },
+    ]
+  },
+  {
+    phase: "Phase 3",
+    label: "Growth",
+    color: "#38bdf8",
+    bg: "#0e1e2a",
+    timeline: "3–6 months",
+    items: [
+      { tech: "pgvector (Supabase)", why: "Store province + commodity embeddings for semantic search — let Midori do true vector RAG instead of string matching", dot: "#a78bfa" },
+      { tech: "Custom MapLibre Tiles", why: "Self-host Vietnam provincial tiles on Supabase Storage / R2 — remove Maptiler dependency, cut map costs", dot: "#38bdf8" },
+      { tech: "PDF Export (React PDF)", why: "One-click export of Land Assessment, Midori briefings, and EUDR compliance reports as branded PDFs", dot: "#4ade80" },
+      { tech: "Resend (transactional email)", why: "Alert emails: fire hotspot spikes, EUDR deadline reminders, weekly deforestation digests", dot: "#fbbf24" },
+    ]
+  },
+  {
+    phase: "Phase 4",
+    label: "Scale",
+    color: "#f472b6",
+    bg: "#2a0e1e",
+    timeline: "6–12 months",
+    items: [
+      { tech: "Multi-tenancy (Orgs)", why: "Clerk org support — team workspaces, shared profiles, role-based access for enterprise buyers", dot: "#f87171" },
+      { tech: "Nx Monorepo", why: "Separate vimap-web, vimap-api, vimap-data packages with shared types — enables independent deploys and SDK extraction", dot: "#818cf8" },
+      { tech: "React Native (Expo)", why: "Mobile app for field agents doing land assessments on-site — offline-capable with local province data bundle", dot: "#4ade80" },
+      { tech: "Kafka / Inngest", why: "Event-driven pipeline for GFW webhook ingestion → province risk re-scoring → alert fan-out at scale", dot: "#fbbf24" },
+    ]
+  },
+  {
+    phase: "Phase 5",
+    label: "Enterprise",
+    color: "#fb923c",
+    bg: "#2a1a0e",
+    timeline: "12+ months",
+    items: [
+      { tech: "Self-hosted LLM (vLLM)", why: "Run fine-tuned Vietnam forestry model on-prem for enterprise customers with data sovereignty requirements", dot: "#a78bfa" },
+      { tech: "PostGIS + TimescaleDB", why: "Replace Supabase standard Postgres with spatial + time-series extensions for high-frequency satellite ingestion", dot: "#38bdf8" },
+      { tech: "Terraform + AWS", why: "Infrastructure-as-code for multi-region deploy — replicate to Singapore + EU for EUDR latency compliance", dot: "#f87171" },
+      { tech: "ISO 27001 / SOC 2", why: "Compliance certifications required by EUDR enterprise buyers and financial institution clients", dot: "#4ade80" },
+    ]
+  },
+];
+
+// ── TREEMAP RENDER ─────────────────────────────────────────────────────────
+function renderTreemap() {
+  const el = document.getElementById('treemap');
+  const W = el.parentElement.clientWidth;
+  const H = Math.max(520, W * 0.62);
+  el.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  el.setAttribute('height', H);
+
+  const root = d3.hierarchy(STACK)
+    .sum(d => d.size || 0)
+    .sort((a, b) => b.value - a.value);
+
+  d3.treemap()
+    .size([W, H])
+    .paddingOuter(6)
+    .paddingInner(3)
+    .paddingTop(24)
+    .round(true)
+    (root);
+
+  const svg = d3.select('#treemap');
+  svg.selectAll('*').remove();
+
+  const tt = document.getElementById('tooltip');
+
+  // Category groups
+  root.children.forEach(cat => {
+    const g = svg.append('g').attr('class', 'cat-group');
+
+    // Background
+    g.append('rect')
+      .attr('x', cat.x0).attr('y', cat.y0)
+      .attr('width', cat.x1 - cat.x0)
+      .attr('height', cat.y1 - cat.y0)
+      .attr('rx', 8)
+      .attr('fill', cat.data.color)
+      .attr('opacity', 0.6);
+
+    // Category label
+    if (cat.x1 - cat.x0 > 60) {
+      g.append('text')
+        .attr('x', cat.x0 + 8)
+        .attr('y', cat.y0 + 7)
+        .attr('class', 'cat-label')
+        .attr('fill', cat.data.accent)
+        .attr('font-size', '9px')
+        .attr('font-weight', '700')
+        .attr('letter-spacing', '0.12em')
+        .text(cat.data.name.toUpperCase());
+    }
+
+    // Leaf nodes
+    cat.children?.forEach(node => {
+      const nw = node.x1 - node.x0;
+      const nh = node.y1 - node.y0;
+      const ng = g.append('g')
+        .attr('class', 'node')
+        .style('cursor', 'pointer');
+
+      // gradient stop
+      const gradId = `grad-${node.data.name.replace(/\W/g,'_')}`;
+      const defs = svg.append('defs');
+      const grad = defs.append('linearGradient')
+        .attr('id', gradId)
+        .attr('x1','0%').attr('y1','0%')
+        .attr('x2','100%').attr('y2','100%');
+      grad.append('stop').attr('offset','0%').attr('stop-color', cat.data.color).attr('stop-opacity', 0.9);
+      grad.append('stop').attr('offset','100%').attr('stop-color', '#0a0f0a').attr('stop-opacity', 0.85);
+
+      ng.append('rect')
+        .attr('x', node.x0 + 1).attr('y', node.y0 + 1)
+        .attr('width', nw - 2).attr('height', nh - 2)
+        .attr('rx', 6)
+        .attr('fill', `url(#${gradId})`)
+        .attr('stroke', cat.data.accent)
+        .attr('stroke-width', 0.5)
+        .attr('stroke-opacity', 0.35);
+
+      // Accent bar top
+      ng.append('rect')
+        .attr('x', node.x0 + 1).attr('y', node.y0 + 1)
+        .attr('width', Math.min(nw - 2, 36))
+        .attr('height', 2.5)
+        .attr('rx', 2)
+        .attr('fill', cat.data.accent)
+        .attr('opacity', 0.7);
+
+      if (nw > 55 && nh > 38) {
+        // Tech name
+        ng.append('text')
+          .attr('x', node.x0 + 8)
+          .attr('y', node.y0 + 12)
+          .attr('class', 'tech-name')
+          .attr('fill', 'rgba(255,255,255,0.93)')
+          .attr('font-size', Math.min(13, nw / 7) + 'px')
+          .attr('font-weight', '700')
+          .text(clip(node.data.name, nw / 7.5));
+
+        if (nh > 58 && node.data.detail) {
+          ng.append('text')
+            .attr('x', node.x0 + 8)
+            .attr('y', node.y0 + 28)
+            .attr('class', 'tech-detail')
+            .attr('fill', 'rgba(255,255,255,0.45)')
+            .attr('font-size', '10px')
+            .text(clip(node.data.detail, nw / 6));
+        }
+
+        if (nh > 72 && node.data.version) {
+          ng.append('text')
+            .attr('x', node.x0 + 8)
+            .attr('y', node.y0 + nh - 10)
+            .attr('fill', cat.data.accent)
+            .attr('fill-opacity', 0.55)
+            .attr('font-size', '9.5px')
+            .attr('font-weight', '600')
+            .text('v' + node.data.version);
+        }
+      }
+
+      // Tooltip
+      ng.on('mousemove', (e) => {
+        tt.style.opacity = '1';
+        tt.style.left = (e.clientX + 16) + 'px';
+        tt.style.top  = (e.clientY - 10) + 'px';
+        tt.innerHTML = `
+          <div class="tt-cat">${cat.data.name}</div>
+          <div class="tt-name">${node.data.name}</div>
+          ${node.data.version ? `<div class="tt-ver">v${node.data.version}</div>` : ''}
+          <div class="tt-desc">${node.data.desc}</div>`;
+      }).on('mouseleave', () => { tt.style.opacity = '0'; });
+    });
+  });
+
+  // Build legend
+  const legend = document.getElementById('legend');
+  legend.innerHTML = '';
+  STACK.children.forEach(cat => {
+    const div = document.createElement('div');
+    div.className = 'legend-item';
+    div.innerHTML = `<span class="legend-dot" style="background:${cat.accent}"></span>${cat.name}`;
+    legend.appendChild(div);
+  });
+}
+
+function clip(str, maxChars) {
+  maxChars = Math.max(4, Math.floor(maxChars));
+  return str.length > maxChars ? str.slice(0, maxChars - 1) + '…' : str;
+}
+
+// ── ROADMAP RENDER ─────────────────────────────────────────────────────────
+function renderRoadmap() {
+  const grid = document.getElementById('roadmap-grid');
+  grid.innerHTML = '';
+  ROADMAP.forEach(phase => {
+    const card = document.createElement('div');
+    card.className = 'phase-card';
+    card.style.background = phase.bg;
+    card.style.borderColor = phase.color + '33';
+
+    card.innerHTML = `
+      <div class="phase-header">
+        <div class="phase-badge" style="background:${phase.color}22;color:${phase.color};border:1px solid ${phase.color}44">${phase.phase}</div>
+        <div>
+          <div class="phase-title">${phase.label}</div>
+          <div class="phase-sub">${phase.timeline}</div>
+        </div>
+      </div>
+      ${phase.items.map(item => `
+        <div class="rm-item">
+          <span class="rm-dot" style="background:${item.dot}"></span>
+          <div>
+            <div class="rm-tech">${item.tech}</div>
+            <div class="rm-why">${item.why}</div>
+          </div>
+        </div>`).join('')}`;
+    grid.appendChild(card);
+  });
+}
+
+// ── TABS ───────────────────────────────────────────────────────────────────
+function showTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => {
+    if (t.textContent.toLowerCase().includes(tab === 'mvp' ? 'current' : 'roadmap')) {
+      t.classList.add('active');
+    }
+  });
+  document.getElementById('view-mvp').classList.toggle('hidden', tab !== 'mvp');
+  document.getElementById('view-roadmap').classList.toggle('hidden', tab !== 'roadmap');
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+renderTreemap();
+renderRoadmap();
+window.addEventListener('resize', () => { if (!document.getElementById('view-mvp').classList.contains('hidden')) renderTreemap(); });
+</script>
+</body>
+</html>

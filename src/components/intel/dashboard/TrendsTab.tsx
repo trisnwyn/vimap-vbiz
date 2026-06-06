@@ -9,6 +9,7 @@ import { profileSummary } from '@/lib/intel/prompts';
 import AgentActivityStream from '../AgentActivityStream';
 import BriefingView from '../BriefingView';
 import ForecastSection from './ForecastSection';
+import LiveForecastPulse from './LiveForecastPulse';
 import MidoriAvatar from '../../midori/MidoriAvatar';
 
 interface TrendsTabProps {
@@ -22,9 +23,10 @@ interface TrendsTabProps {
 export default function TrendsTab({ year, selectedProvince, autoRunToken, onEditProfile }: TrendsTabProps) {
   const { profile } = useBusinessProfile();
   const { status, events, phase, briefing, streamedSummary, error, run, abort, reset } = useIntelStream();
-  const { save: saveLastBriefing } = useLastBriefing();
+  const { lastBriefing, hydrated, save: saveLastBriefing } = useLastBriefing();
 
   const running = status === 'running';
+  const STALE_MS = 24 * 60 * 60 * 1000; // a briefing older than 24h is "stale"
 
   // Persist completed briefing for the RAG context.
   useEffect(() => {
@@ -44,6 +46,24 @@ export default function TrendsTab({ year, selectedProvince, autoRunToken, onEdit
       run(profile, year);
     }
   }, [autoRunToken, profile, run, reset, year]);
+
+  // Auto-run the daily briefing ONCE on mount when the last one is stale (>24h)
+  // — the "no manual generate button" requirement. Bounded to one agentic run
+  // per load; the cheap live pulse handles continuous freshness.
+  const autoRanRef = useRef(false);
+  useEffect(() => {
+    if (!hydrated || !profile || autoRanRef.current) return;
+    if (status !== 'idle') return;
+    const stale = !lastBriefing || Date.now() - lastBriefing.generatedAt > STALE_MS;
+    if (stale) {
+      autoRanRef.current = true;
+      run(profile, year);
+    }
+  }, [hydrated, profile, lastBriefing, status, run, year, STALE_MS]);
+
+  // A fresh (<24h) briefing exists in storage but not in memory → show it.
+  const showCachedBriefing =
+    status === 'idle' && !briefing && !!lastBriefing && Date.now() - lastBriefing.generatedAt <= STALE_MS;
 
   return (
     <div className="h-full overflow-y-auto">
@@ -66,9 +86,12 @@ export default function TrendsTab({ year, selectedProvince, autoRunToken, onEdit
           </button>
         </div>
 
+        {/* Live forecast pulse — continuously polls, no click required. */}
+        <LiveForecastPulse profile={profile} year={year} />
+
         {/* Run controls */}
         <div className="flex items-center gap-2">
-          {status === 'idle' && (
+          {status === 'idle' && !showCachedBriefing && (
             <button
               onClick={handleRun}
               className="flex items-center justify-center gap-2 px-4 min-h-[40px] rounded-lg text-xs font-bold text-white transition-all flex-1"
@@ -78,7 +101,16 @@ export default function TrendsTab({ year, selectedProvince, autoRunToken, onEdit
               }}
             >
               <Play className="w-3.5 h-3.5" />
-              Run intelligence briefing
+              Generate briefing now
+            </button>
+          )}
+          {showCachedBriefing && (
+            <button
+              onClick={handleRun}
+              className="flex items-center justify-center gap-2 px-4 min-h-[40px] rounded-lg text-xs font-bold text-accent glass-btn !bg-accent/10 !border-accent/25 hover:!bg-accent/20 transition-all flex-1"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Refresh now
             </button>
           )}
           {running && (
@@ -96,13 +128,28 @@ export default function TrendsTab({ year, selectedProvince, autoRunToken, onEdit
               className="flex items-center justify-center gap-2 px-4 min-h-[40px] rounded-lg text-xs font-bold text-accent glass-btn !bg-accent/10 !border-accent/25 hover:!bg-accent/20 transition-all flex-1"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              Re-run briefing
+              Refresh now
             </button>
           )}
         </div>
 
-        {/* Idle hint */}
-        {status === 'idle' && (
+        {/* Cached briefing summary — last briefing is still fresh (<24h). */}
+        {showCachedBriefing && lastBriefing && (
+          <div className="rounded-xl border border-accent/20 bg-white/55 p-4">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <MidoriAvatar size="sm" />
+              <span className="text-[10px] font-bold text-accent uppercase tracking-wider">Latest briefing</span>
+              <span className="text-[10px] text-[#9ca3af]">
+                · {new Date(lastBriefing.generatedAt).toLocaleString()}
+              </span>
+            </div>
+            <h3 className="text-sm font-bold text-[#111827] mb-1">{lastBriefing.headline}</h3>
+            <p className="text-xs text-[#374151] leading-relaxed">{lastBriefing.executiveSummary}</p>
+          </div>
+        )}
+
+        {/* Idle hint — only when there is no cached briefing to show. */}
+        {status === 'idle' && !showCachedBriefing && (
           <div className="rounded-xl border border-[#35b779]/[0.15] bg-[#35b779]/[0.04] p-5 text-center">
             <Globe2 className="w-7 h-7 text-accent/60 mx-auto mb-2" />
             <p className="text-xs text-[#374151] leading-relaxed max-w-md mx-auto">
