@@ -44,7 +44,7 @@ export function useForecastPulse(profile: BusinessProfile | null, year: number):
   const latestRef = useRef<ForecastPulse | null>(cacheValid ? _cache!.data : null);
 
   useEffect(() => {
-    if (!profile) return;
+    // profile may be null → the route falls back to national scope.
     let cancelled = false;
     let intervalId: ReturnType<typeof setInterval> | null = null;
 

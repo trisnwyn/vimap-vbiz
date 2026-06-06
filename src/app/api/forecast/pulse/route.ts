@@ -87,10 +87,10 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
+  // Profile is OPTIONAL: when absent (e.g. the public map view), the pulse
+  // falls back to national scope. When present, it scopes to the user's
+  // sourcing provinces.
   const profile = sanitizeProfile(body.profile);
-  if (!profile) {
-    return Response.json({ error: 'Missing or invalid business profile' }, { status: 400 });
-  }
 
   const year =
     typeof body.year === 'number' && body.year >= 2000 && body.year <= 2030
@@ -113,7 +113,7 @@ export async function POST(req: Request): Promise<Response> {
     );
   }
 
-  const scopeIds = profile.sourcingProvinces.length > 0 ? profile.sourcingProvinces : undefined;
+  const scopeIds = profile && profile.sourcingProvinces.length > 0 ? profile.sourcingProvinces : undefined;
   const cacheKey = `${(scopeIds ?? ['*']).join(',')}|${year}`;
 
   // ── serve from cache when fresh ──

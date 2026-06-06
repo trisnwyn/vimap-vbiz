@@ -8,7 +8,7 @@ import NewsPanel from '@/components/NewsPanel';
 import IntelligenceDashboard from '@/components/intel/IntelligenceDashboard';
 import TimeSlider from '@/components/TimeSlider';
 import Legend from '@/components/Legend';
-import HeadlineStrip from '@/components/HeadlineStrip';
+import LiveForecastPulse from '@/components/intel/dashboard/LiveForecastPulse';
 import AlertTicker from '@/components/AlertTicker';
 import ProvinceDetail from '@/components/ProvinceDetail';
 import BasemapSwitcher from '@/components/BasemapSwitcher';
@@ -200,8 +200,8 @@ function Dashboard() {
 
       {!isIntelligence && (
         <>
-          <div className="hidden md:block">
-            <HeadlineStrip year={year} />
+          <div className="hidden md:block px-3 py-2 border-b border-[#35b779]/[0.15] bg-background">
+            <LiveForecastPulse profile={null} year={year} />
           </div>
           <AlertTicker year={year} />
         </>

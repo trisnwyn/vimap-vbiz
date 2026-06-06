@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Flame, TrendingDown, TrendingUp, Minus, AlertTriangle, ArrowUp, ArrowDown } from 'lucide-react';
+import { Flame, TrendingDown, TrendingUp, ShieldCheck, ShieldAlert, AlertTriangle } from 'lucide-react';
 import { useForecastPulse } from '@/hooks/useForecastPulse';
 import type { BusinessProfile } from '@/types/intel';
 
@@ -17,28 +17,18 @@ function relativeTime(ts: number | null): string {
   if (s < 60) return `${s}s ago`;
   const m = Math.floor(s / 60);
   if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  return `${h}h ago`;
+  return `${Math.floor(m / 60)}h ago`;
 }
 
-/** Small ▲/▼ delta chip; renders nothing when there is no meaningful change. */
-function Delta({ value, invertColor = false }: { value: number; invertColor?: boolean }) {
-  if (!value || Math.abs(value) < 0.0001) return null;
-  const up = value > 0;
-  // For "bad" metrics (fires, loss) an increase is red; for "good" ones invert.
-  const bad = invertColor ? !up : up;
-  const color = bad ? 'text-red-500' : 'text-green-600';
-  const Icon = up ? ArrowUp : ArrowDown;
-  return (
-    <span className={`inline-flex items-center gap-0.5 text-[10px] font-semibold ${color}`}>
-      <Icon className="w-2.5 h-2.5" />
-      {Math.abs(value) >= 1 ? Math.abs(Math.round(value)) : Math.abs(value).toFixed(2)}
-    </span>
-  );
+/** Per-province risk tier from its 0–100 score. */
+function chipTone(score: number): string {
+  if (score >= 60) return 'bg-red-500/10 text-red-700 border-red-500/25';
+  if (score >= 45) return 'bg-amber-500/10 text-amber-700 border-amber-500/25';
+  return 'bg-green-500/10 text-green-700 border-green-600/20';
 }
 
 export default function LiveForecastPulse({ profile, year }: LiveForecastPulseProps) {
-  const { pulse, prev, loading, error, lastUpdated } = useForecastPulse(profile, year);
+  const { pulse, loading, error, lastUpdated } = useForecastPulse(profile, year);
 
   // Re-render the "updated Ns ago" label every 15s without refetching.
   const [, force] = useState(0);
@@ -47,24 +37,18 @@ export default function LiveForecastPulse({ profile, year }: LiveForecastPulsePr
     return () => clearInterval(id);
   }, []);
 
-  if (!profile) return null;
-
   if (loading && !pulse) {
     return (
-      <div className="rounded-xl border border-accent/20 bg-accent/[0.04] p-3 animate-pulse">
-        <div className="h-3 w-24 bg-accent/15 rounded mb-3" />
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-14 rounded-lg bg-accent/[0.06]" />
-          ))}
-        </div>
+      <div className="flex items-center gap-2.5 rounded-xl border border-accent/20 bg-accent/[0.04] px-3 py-2 animate-pulse">
+        <div className="w-7 h-7 rounded-lg bg-accent/15 shrink-0" />
+        <div className="h-3 w-48 bg-accent/15 rounded" />
       </div>
     );
   }
 
   if (error && !pulse) {
     return (
-      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/[0.07] border border-amber-500/20">
+      <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/[0.07] border border-amber-500/20">
         <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
         <p className="text-[11px] text-[#6b7280]">Live pulse unavailable — {error}</p>
       </div>
@@ -73,84 +57,88 @@ export default function LiveForecastPulse({ profile, year }: LiveForecastPulsePr
 
   if (!pulse) return null;
 
-  const { forecast: f, national, fires, topRisks } = pulse;
-  const declining = f.changePct2030 < 0;
-  const stable = Math.abs(f.changePct2030) < 1;
-  const TrendIcon = stable ? Minus : declining ? TrendingDown : TrendingUp;
-  const trendColor = stable ? 'text-[#6b7280]' : declining ? 'text-red-600' : 'text-green-700';
+  const { forecast: f, national, fires, topRisks, scope } = pulse;
 
-  const fireDelta = prev ? fires.count - prev.fires.count : 0;
-  const lossDelta = prev ? (national.avgLossRate - prev.national.avgLossRate) * 100 : 0;
-  const riskDelta = prev ? national.highRiskCount - prev.national.highRiskCount : 0;
-  const topRisk = topRisks[0];
+  // ── derive the verdict ──────────────────────────────────────────────
+  const danger = topRisks.filter((r) => r.score >= 60).slice(0, 3);
+  const watch = topRisks.filter((r) => r.score >= 45 && r.score < 60).slice(0, 3);
+  const flagged = danger.length > 0 ? danger : watch;
+  const fireHot = fires.available ? fires.top.slice(0, 2) : [];
+  const areaWord = scope === 'province' ? 'sourcing area' : 'region';
+
+  type Tier = 'critical' | 'watch' | 'calm';
+  const tier: Tier = danger.length > 0 ? 'critical' : watch.length > 0 || national.highRiskCount > 0 ? 'watch' : 'calm';
+
+  const TIER = {
+    critical: { Icon: ShieldAlert, text: 'text-red-700', ring: 'border-red-500/30 bg-red-500/[0.05]', badge: 'bg-red-500/12 text-red-600' },
+    watch: { Icon: AlertTriangle, text: 'text-amber-700', ring: 'border-amber-500/30 bg-amber-500/[0.05]', badge: 'bg-amber-500/12 text-amber-600' },
+    calm: { Icon: ShieldCheck, text: 'text-green-700', ring: 'border-green-600/25 bg-green-500/[0.04]', badge: 'bg-green-500/12 text-green-700' },
+  }[tier];
+
+  const headline =
+    tier === 'critical'
+      ? `${danger.length} ${areaWord}${danger.length > 1 ? 's' : ''} in danger`
+      : tier === 'watch'
+        ? `${(watch.length || national.highRiskCount)} ${areaWord}${(watch.length || national.highRiskCount) > 1 ? 's' : ''} under watch`
+        : `All ${areaWord}s stable`;
+
+  const declining = f.changePct2030 < 0;
+  const stable2030 = Math.abs(f.changePct2030) < 1;
+  const TrendIcon = stable2030 ? null : declining ? TrendingDown : TrendingUp;
 
   return (
-    <div className="rounded-xl border border-accent/25 bg-gradient-to-br from-accent/[0.06] to-transparent p-3">
-      {/* LIVE header */}
-      <div className="flex items-center justify-between mb-2.5">
-        <div className="flex items-center gap-1.5">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75 animate-ping" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
-          </span>
-          <span className="text-[10px] font-bold text-accent uppercase tracking-[0.14em]">Live forecast</span>
-        </div>
-        <span className="text-[10px] text-[#9ca3af]">Updated {relativeTime(lastUpdated)}</span>
-      </div>
-
-      {/* Live metric tiles */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-        {/* 2030 projection */}
-        <div className="rounded-lg border border-accent/20 bg-white/55 p-2.5">
-          <div className="text-[10px] text-[#6b7280] uppercase tracking-wide mb-1">2030 outlook</div>
-          <div className={`flex items-center gap-1 text-base font-bold ${trendColor}`}>
-            <TrendIcon className="w-3.5 h-3.5" />
-            {f.changePct2030 >= 0 ? '+' : ''}{f.changePct2030.toFixed(1)}%
-          </div>
-          <div className="text-[10px] text-[#9ca3af] mt-0.5">{(f.forest2030 / 1_000_000).toFixed(2)}M ha</div>
+    <div className={`rounded-xl border ${TIER.ring} px-3 py-2`}>
+      <div className="flex items-center gap-3">
+        {/* Severity icon */}
+        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${TIER.badge}`}>
+          <TIER.Icon className="w-4 h-4" />
         </div>
 
-        {/* Avg loss rate */}
-        <div className="rounded-lg border border-[#35b779]/[0.15] bg-white/55 p-2.5">
-          <div className="text-[10px] text-[#6b7280] uppercase tracking-wide mb-1">Avg loss rate</div>
-          <div className="flex items-center gap-1.5 text-base font-bold text-[#111827]">
-            {(national.avgLossRate * 100).toFixed(2)}%
-            <Delta value={lossDelta} invertColor />
+        {/* Verdict + danger chips */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="relative flex h-1.5 w-1.5 shrink-0">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75 animate-ping" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-green-500" />
+            </span>
+            <span className={`text-sm font-bold leading-none ${TIER.text}`}>{headline}</span>
+            {fireHot.length > 0 && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-orange-600 bg-orange-500/10 border border-orange-500/20 rounded-full px-1.5 py-0.5">
+                <Flame className="w-2.5 h-2.5" />
+                {fires.count} fires · {fireHot.map((p) => p.name).join(', ')}
+              </span>
+            )}
           </div>
-          <div className="text-[10px] text-[#9ca3af] mt-0.5">{national.scope === 'selection' ? 'your scope' : 'national'}</div>
-        </div>
 
-        {/* Active fires (live FIRMS) */}
-        <div className="rounded-lg border border-orange-500/20 bg-white/55 p-2.5">
-          <div className="text-[10px] text-[#6b7280] uppercase tracking-wide mb-1 flex items-center gap-1">
-            <Flame className="w-2.5 h-2.5 text-orange-500" /> Active fires
-          </div>
-          {fires.available ? (
-            <>
-              <div className="flex items-center gap-1.5 text-base font-bold text-[#111827]">
-                {fires.count}
-                <Delta value={fireDelta} invertColor />
-              </div>
-              <div className="text-[10px] text-[#9ca3af] mt-0.5">last 48h</div>
-            </>
+          {/* Named areas as risk chips */}
+          {flagged.length > 0 ? (
+            <div className="flex items-center gap-1 mt-1 flex-wrap">
+              {flagged.map((r) => (
+                <span
+                  key={r.id}
+                  className={`inline-flex items-center gap-1 text-[10px] font-medium rounded-md border px-1.5 py-0.5 ${chipTone(r.score)}`}
+                >
+                  {r.name}
+                  <span className="font-mono opacity-70">{r.lossRatePct}</span>
+                </span>
+              ))}
+            </div>
           ) : (
-            <>
-              <div className="text-base font-bold text-[#d1d5db]">—</div>
-              <div className="text-[10px] text-[#9ca3af] mt-0.5">unavailable</div>
-            </>
+            <p className="text-[10px] text-[#9ca3af] mt-1 leading-none">No areas above the 1.5%/yr loss threshold.</p>
           )}
         </div>
 
-        {/* High-risk count */}
-        <div className="rounded-lg border border-[#35b779]/[0.15] bg-white/55 p-2.5">
-          <div className="text-[10px] text-[#6b7280] uppercase tracking-wide mb-1">High-risk areas</div>
-          <div className="flex items-center gap-1.5 text-base font-bold text-[#111827]">
-            {national.highRiskCount}
-            <Delta value={riskDelta} invertColor />
+        {/* Tiny muted stats + freshness */}
+        <div className="text-right shrink-0 hidden sm:block">
+          <div className="flex items-center justify-end gap-2 text-[10px] text-[#6b7280]">
+            <span className="inline-flex items-center gap-0.5">
+              {TrendIcon && <TrendIcon className={`w-2.5 h-2.5 ${declining ? 'text-red-500' : 'text-green-600'}`} />}
+              2030 {f.changePct2030 >= 0 ? '+' : ''}{f.changePct2030.toFixed(1)}%
+            </span>
+            <span className="text-[#d1d5db]">·</span>
+            <span>{(national.avgLossRate * 100).toFixed(2)}%/yr</span>
           </div>
-          <div className="text-[10px] text-[#9ca3af] mt-0.5 truncate">
-            {topRisk ? `top: ${topRisk.name} (${topRisk.score})` : 'none flagged'}
-          </div>
+          <div className="text-[9px] text-[#9ca3af] mt-1 uppercase tracking-wider">Updated {relativeTime(lastUpdated)}</div>
         </div>
       </div>
     </div>
