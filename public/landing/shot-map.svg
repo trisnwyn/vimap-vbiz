@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 860" width="1280" height="860">
+  <rect width="1280" height="860" fill="#eef1e3"/>
+  <rect x="24" y="24" width="1232" height="60" rx="10" fill="#ffffff" fill-opacity="0.6"/>
+  <rect x="24" y="108" width="320" height="728" rx="10" fill="#ffffff" fill-opacity="0.5"/>
+  <g font-family="Georgia, serif" text-anchor="middle">
+    <text x="640" y="450" font-size="44" fill="#4a5a2b" font-style="italic">Map view</text>
+    <text x="640" y="500" font-size="20" fill="#6b7280">Replace with /landing/shot-map.jpg · 1280×860</text>
+  </g>
+</svg>

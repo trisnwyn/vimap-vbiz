@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 860" width="1040" height="860">
+  <rect width="1040" height="860" fill="#f4f0e6"/>
+  <rect x="40" y="40" width="960" height="120" rx="12" fill="#5f7138" fill-opacity="0.12"/>
+  <rect x="40" y="190" width="460" height="280" rx="12" fill="#ffffff" fill-opacity="0.7"/>
+  <rect x="540" y="190" width="460" height="280" rx="12" fill="#ffffff" fill-opacity="0.7"/>
+  <g font-family="Georgia, serif" text-anchor="middle">
+    <text x="520" y="600" font-size="40" fill="#4a5a2b" font-style="italic">Land assessment</text>
+    <text x="520" y="648" font-size="19" fill="#6b7280">Replace with /landing/shot-assessment.jpg · 1040×860</text>
+  </g>
+</svg>

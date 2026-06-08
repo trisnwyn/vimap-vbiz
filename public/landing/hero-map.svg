@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#eef1e3"/>
+      <stop offset="1" stop-color="#dfe4cf"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#g)"/>
+  <g fill="none" stroke="#5f7138" stroke-opacity="0.25" stroke-width="2">
+    <path d="M760 120 C620 320 700 460 800 560 C900 660 860 800 760 900"/>
+    <circle cx="800" cy="500" r="320"/>
+  </g>
+  <g font-family="Georgia, serif" text-anchor="middle">
+    <text x="800" y="490" font-size="54" fill="#4a5a2b" font-style="italic">Hero map</text>
+    <text x="800" y="545" font-size="22" fill="#6b7280">Replace with /landing/hero-map.jpg · 1600×1000</text>
+  </g>
+</svg>

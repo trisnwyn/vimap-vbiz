@@ -10,6 +10,12 @@
   --danger: #ef4444;
   --warning: #f59e0b;
 
+  /* Landing — deeper olive for solid "Soul-style" cards */
+  --olive: #5f7138;
+  --olive-deep: #4a5a2b;
+  --olive-soft: #eef1e3;
+  --cream-2: #f4f0e6;
+
   /* Semantic text scale — neutral slate, NOT green */
   --text-1: #111827;   /* headings, values */
   --text-2: #1f2937;   /* body, labels     */
@@ -27,8 +33,11 @@
   --color-accent-dim: var(--accent-dim);
   --color-danger: var(--danger);
   --color-warning: var(--warning);
+  --color-olive: var(--olive);
+  --color-olive-deep: var(--olive-deep);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-fraunces);
 }
 
 * {
@@ -40,7 +49,6 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
-  overflow: hidden;
 }
 
 /* ── Keyboard focus indicator (a11y) ────────────────────── */
@@ -238,6 +246,82 @@ body {
 .category-climate      { color: #35b779; }
 .category-agriculture  { color: #a67c00; }
 
+/* ═══════════════════════════════════════════════════════════
+   LANDING PAGE — editorial / serif (warm cream + olive)
+   ═══════════════════════════════════════════════════════════ */
+
+/* Elegant serif display type (Fraunces) */
+.font-display {
+  font-family: var(--font-fraunces), ui-serif, Georgia, "Times New Roman", serif;
+  letter-spacing: -0.015em;
+}
+.font-display em { font-style: italic; }
+
+/* Reveal-on-scroll (progressive enhancement):
+   Content is VISIBLE by default. JS adds `.reveal-armed` on mount (only when it
+   confirms it's running + motion is allowed), which hides it ready to animate;
+   `.is-visible` then animates it in on scroll. If JS never runs or fails,
+   nothing is hidden — content always shows. */
+.reveal { opacity: 1; transform: none; }
+.reveal.reveal-armed {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal.reveal-armed.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Slow Ken-Burns drift for hero imagery */
+@keyframes ken-burns {
+  0%   { transform: scale(1.05) translate(0, 0); }
+  50%  { transform: scale(1.12) translate(-1.5%, -1%); }
+  100% { transform: scale(1.05) translate(0, 0); }
+}
+.animate-ken-burns { animation: ken-burns 26s ease-in-out infinite; }
+
+/* Floating annotation chips drifting over the hero map */
+@keyframes float-soft {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-7px); }
+}
+.animate-float { animation: float-soft 5s ease-in-out infinite; }
+
+/* Expanding glow ring for province markers */
+@keyframes marker-ring {
+  0%   { transform: scale(0.6); opacity: 0.55; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+.animate-marker-ring { animation: marker-ring 2.6s ease-out infinite; }
+
+/* Slow marquee strip */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.animate-marquee { animation: marquee 32s linear infinite; }
+
+/* Olive solid card — "Soul" reference style */
+.olive-card {
+  background: linear-gradient(150deg, var(--olive) 0%, var(--olive-deep) 100%);
+  color: #f4f0e6;
+  border-radius: 1.25rem;
+  box-shadow: 0 10px 30px rgba(74, 90, 43, 0.18);
+}
+
+/* Animated serif link underline */
+.link-underline {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1.5px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.3s ease;
+}
+.link-underline:hover { background-size: 100% 1.5px; }
+
 /* ── Reduced motion (a11y) ─────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -246,4 +330,5 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+  .reveal, .reveal.reveal-armed { opacity: 1 !important; transform: none !important; }
 }

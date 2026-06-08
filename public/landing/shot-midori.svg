@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 860" width="1040" height="860">
+  <rect width="1040" height="860" fill="#eef1e3"/>
+  <rect x="40" y="40" width="960" height="780" rx="16" fill="#ffffff" fill-opacity="0.65"/>
+  <rect x="40" y="40" width="6" height="780" rx="3" fill="#35b779"/>
+  <g font-family="Georgia, serif" text-anchor="middle">
+    <text x="520" y="430" font-size="40" fill="#4a5a2b" font-style="italic">Midori briefing</text>
+    <text x="520" y="478" font-size="19" fill="#6b7280">Replace with /landing/shot-midori.jpg · 1040×860</text>
+  </g>
+</svg>

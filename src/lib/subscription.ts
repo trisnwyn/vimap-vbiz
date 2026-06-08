@@ -20,8 +20,8 @@ export function canAccess(tier: Tier, feature: Feature): boolean {
 // ── Usage limits ───────────────────────────────────────────────────────────
 export const LIMITS: Record<Tier, { aiAnalysis: number; savedAssessments: number; newsArticles: number }> = {
   free:         { aiAnalysis: 0,        savedAssessments: 0,        newsArticles: 5 },
-  analyst:      { aiAnalysis: 20,       savedAssessments: 10,       newsArticles: Infinity },
-  professional: { aiAnalysis: Infinity, savedAssessments: Infinity, newsArticles: Infinity },
+  analyst:      { aiAnalysis: 20,       savedAssessments: 5,        newsArticles: Infinity },
+  professional: { aiAnalysis: Infinity, savedAssessments: 50,       newsArticles: Infinity },
   enterprise:   { aiAnalysis: Infinity, savedAssessments: Infinity, newsArticles: Infinity },
 };
 
@@ -38,64 +38,100 @@ export const STRIPE_PRICES = {
 } as const;
 
 // ── Plan display metadata ──────────────────────────────────────────────────
+// Prices are annual, in VND, aligned with the revenue model. AI is sold as an
+// optional add-on (see AI_ADDON) rather than bundled into the base tiers.
+// Internal tier KEYS stay free/analyst/professional/enterprise for billing &
+// gating compatibility; the displayed names are the new model.
 export const PLAN_META = {
   free: {
     name: 'Explorer',
-    price: { monthly: 0, yearly: 0 },
-    description: 'Province-level insights, no account required',
-    color: 'text-[#6b7280]',
-    badge: 'bg-[#35b779]/[0.08] text-[#374151] border-[#35b779]/20',
+    icon: '🌿',
+    priceVnd: 0,
+    priceLabel: 'Free',
+    unit: '',
+    description: 'Province-level insights — no account required',
+    color: 'text-[#3B6D11]',
+    badge: 'bg-[#EAF3DE] text-[#3B6D11] border-[#3B6D11]/20',
     highlights: [
-      'Province map & forest loss charts',
+      'Interactive map & province stats',
+      'Forest-loss heatmap',
       'Time slider 2000–2024',
       '5 news articles',
-      'Heatmap overlay',
     ],
   },
   analyst: {
-    name: 'Analyst',
-    price: { monthly: 39, yearly: 390 },
-    description: 'Full parcel assessment & EUDR compliance',
-    color: 'text-[#35b779]',
-    badge: 'bg-[#35b779]/[0.12] text-[#35b779] border-[#35b779]/30',
+    name: 'Individual',
+    icon: '👤',
+    priceVnd: 600_000,
+    priceLabel: '0.6M ₫',
+    unit: '/ user · year',
+    description: 'For individual analysts & smallholders',
+    color: 'text-[#185FA5]',
+    badge: 'bg-[#E6F1FB] text-[#185FA5] border-[#185FA5]/25',
     highlights: [
       'Everything in Explorer',
-      'Unlimited parcel assessments',
-      'Real weather + soil data',
-      'EUDR compliance check',
-      'Investment score & crop viability',
-      'PDF export report',
-      '20 AI analyses / month',
-      '10 saved assessments',
+      'Full live news feed',
+      '3 parcel assessments / month',
+      'Weather + soil real data',
+      'Crop viability',
+      '5 saved assessments',
+      '3 PDF exports / month',
     ],
   },
   professional: {
-    name: 'Professional',
-    price: { monthly: 99, yearly: 990 },
-    description: 'Unlimited AI + API access for power users',
-    color: 'text-blue-500',
-    badge: 'bg-blue-500/[0.10] text-blue-600 border-blue-500/25',
+    name: 'Org · SME',
+    icon: '🏢',
+    priceVnd: 3_000_000,
+    priceLabel: '3M ₫',
+    unit: '/ org · year',
+    onboardingVnd: 15_000_000,
+    onboardingLabel: '+15M ₫ onboarding (one-time)',
+    description: 'For organizations & SMEs',
+    color: 'text-[#854F0B]',
+    badge: 'bg-[#FAEEDA] text-[#854F0B] border-[#854F0B]/25',
     highlights: [
-      'Everything in Analyst',
-      'Unlimited AI analyses',
-      'Unlimited saved assessments',
-      'API access (500 calls/day)',
+      'Everything in Individual',
+      'Unlimited parcel assessments',
+      'EUDR compliance check',
+      'Investment score + radar',
+      'Unlimited PDF export',
+      '50 saved assessments',
       'Priority support',
     ],
   },
   enterprise: {
-    name: 'Enterprise',
-    price: { monthly: 0, yearly: 0 },
-    description: 'Custom data, team seats, SLA',
-    color: 'text-purple-500',
-    badge: 'bg-purple-500/[0.10] text-purple-600 border-purple-500/25',
+    name: 'Enterprise · Gov',
+    icon: '🏛️',
+    priceVnd: 400_000_000,
+    priceLabel: '~400M ₫',
+    unit: '/ contract · year',
+    description: 'Custom deployment for enterprise & government',
+    color: 'text-[#534AB7]',
+    badge: 'bg-[#EEEDFE] text-[#534AB7] border-[#534AB7]/25',
     highlights: [
-      'Everything in Professional',
-      'Team seats (up to 10)',
-      'White-label PDF export',
-      'Unlimited API calls',
-      'Custom data integration',
+      'Everything in Org',
+      'Full AI suite included',
+      'Unlimited API access',
+      'Custom dashboard + local hosting',
+      'Multi-supplier tracking',
+      'Branded reports',
       'Dedicated SLA support',
     ],
   },
 } as const;
+
+// ── AI Add-on (optional — attaches to any paid tier) ────────────────────────
+export const AI_ADDON = {
+  analyst:      { vnd: 300_000,   label: '+0.3M ₫', unit: '/ user · year' },
+  professional: { vnd: 1_500_000, label: '+1.5M ₫', unit: '/ org · year'  },
+  enterprise:   { included: true, label: 'Included' },
+} as const;
+
+export const AI_ADDON_FEATURES = [
+  'AI parcel flagging',
+  'Natural-language queries on forest data',
+  'Auto EUDR batch reports (Org+)',
+  'Batch parcel scanning (Org+)',
+  'API access — 500 calls / day (Org+)',
+  'Investment Scorecard (Org+)',
+] as const;
